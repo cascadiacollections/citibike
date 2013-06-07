@@ -1,21 +1,29 @@
-{ 
-    "name": "citibike"
-    , "version": "v0.0.1"
-    , "description": "Citibike API Client Library for node.js"
-    , "keywords": ["citbikenyc","citi","bike","nyc","api"]
-    , "homepage": "https://github.com/KevinTCoughlin/citibike"
-    , "author": "Kevin Coughlin <kevintcoughlin@gmail.com>"
-    , "licenses":
-      [ { "type": "The MIT License"
-        , "url": "https://raw.github.com/KevinTCoughlin/citibike/master/LICENSE"
-      } ]
-    , "repository":
-      { "type": "git"
-      , "url": "http://github.com/KevinTCoughlin/citibike.git"
-      }
-    , "dependencies":
-      {
-      }
-    , "engines": ["node >=0.4.0"]
-    , "main": "./lib/citibike"
+{
+  "name": "citibike",
+  "version": "1.0.0",
+  "description": "Citibike API Client Library for node.js",
+  "keywords": [
+    "citbikenyc",
+    "citi",
+    "bike",
+    "nyc",
+    "api"
+  ],
+  "homepage": "https://github.com/KevinTCoughlin/citibike",
+  "author": "Kevin Coughlin <kevintcoughlin@gmail.com>",
+  "licenses": [
+    {
+      "type": "The MIT License",
+      "url": "https://raw.github.com/KevinTCoughlin/citibike/master/LICENSE"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/KevinTCoughlin/citibike.git"
+  },
+  "dependencies": {},
+  "engines": [
+    "node >=0.4.0"
+  ],
+  "main": "./lib/citibike"
 }
