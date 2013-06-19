@@ -52,32 +52,20 @@
 var Citibike = require('..')
   , citibike = new Citibike;
 
-/** 
- * Retrieves Citibike Stations JSON Data and prints to console
- *
- */
+/** Retrieves Citibike Stations JSON Data and prints to console */
 citibike.getStations(null, function(data) {
-  console.log("------ Printing Citibike Stations ------");
+  console.log("Getting Citibike Stations...");
   console.log(data);
-  console.log("------    End Citibike Stations   ------");
 });
 
-/** 
- * Retrieves Citibike Branches JSON Data and prints to console
- *
- */
+/** Retrieves Citibike Branches JSON Data and prints to console */
 citibike.getBranches(null, function(data) {
-  console.log("------ Printing Citibike Branches ------");
+  console.log("Getting Citibike Branches...");
   console.log(data);
-  console.log("------    End Citibike Branches   ------");
 });
 
-/** 
- * Retrieves Citibike Helmets JSON Data and prints to console
- *
- */
+/**  Retrieves Citibike Helmets JSON Data and prints to console */
 citibike.getHelmets(null, function(data) {
-  console.log("------ Printing Citibike Helmets ------");
+  console.log("Getting Citibike Helmets...");
   console.log(data);
-  console.log("------    End Citibike Helmets   ------");
 });
