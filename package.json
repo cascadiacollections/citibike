@@ -1,6 +1,6 @@
 {
   "name": "citibike",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Citibike API Client Library for node.js",
   "keywords": [
     "citbikenyc",
