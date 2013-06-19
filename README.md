@@ -1,6 +1,6 @@
-# CitibikeNYC API Client Library for node.js
+# CitibikeNYC API Client Library for Node.js
 
-A node.js module, which provides an object oriented wrapper for the CitibikeNYC API.
+[![Build Status](https://travis-ci.org/KevinTCoughlin/citibike.png)](https://travis-ci.org/KevinTCoughlin/citibike)
 
 ## Installation
 
@@ -8,7 +8,7 @@ A node.js module, which provides an object oriented wrapper for the CitibikeNYC 
 
       $ npm install citibike
 
-or
+  or
 
   Install via git clone:
 
