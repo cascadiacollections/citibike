@@ -22,6 +22,7 @@ describe('Citibike.utils', function () {
 		"key2": "value2",
 		"key3": "default3"
 	};
+	
     assert.deepEqual(result, utils.merge(defaults, options));
   });
 });
