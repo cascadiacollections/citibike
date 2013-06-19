@@ -1,9 +1,30 @@
-var assert = require("assert")
-describe('Array', function(){
-  describe('#indexOf()', function(){
-    it('should return -1 when the value is not present', function(){
-      assert.equal(-1, [1,2,3].indexOf(5));
-      assert.equal(-1, [1,2,3].indexOf(0));
-    })
-  })
-})
+"use strict";
+
+var citibike = require('..')
+  , http = require('http')
+  , utils = require('../lib/utils')
+  , assert = require('assert');
+
+describe('citibike.utils', function () {
+  specify('.merge()', function () {
+    assert.equal(true, true);
+  });
+
+  specify('.errorLog()', function () {
+    assert.equal(true, true);
+  });
+});
+
+describe('citibike', function () {
+  specify('getStations()', function () {
+    assert.equal(true, true);
+  });
+
+  specify('getBranches()', function () {
+    assert.equal(true, true);
+  });
+
+  specify('getHelmets()', function () {
+    assert.equal(true, true);
+  });
+});
