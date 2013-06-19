@@ -61,3 +61,23 @@ citibike.getStations(null, function(data) {
   console.log(data);
   console.log("------    End Citibike Stations   ------");
 });
+
+/** 
+ * Retrieves Citibike Branches JSON Data and prints to console
+ *
+ */
+citibike.getBranches(null, function(data) {
+  console.log("------ Printing Citibike Branches ------");
+  console.log(data);
+  console.log("------    End Citibike Branches   ------");
+});
+
+/** 
+ * Retrieves Citibike Helmets JSON Data and prints to console
+ *
+ */
+citibike.getHelmets(null, function(data) {
+  console.log("------ Printing Citibike Helmets ------");
+  console.log(data);
+  console.log("------    End Citibike Helmets   ------");
+});
