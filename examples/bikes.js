@@ -1,15 +1,7 @@
 /**
  *  Get a list of available stations and bikes.
- */
- 
-Citibike = require('..');
-citibike = new Citibike;
-
-citibike.getStations(null, function(callback) {
-  var stations = callback;
-  console.log(stations.results);
-  
-  /* Example Response:
+ *     
+    Example Response:
     {
       ok: true,
       meta: [ ],
@@ -47,13 +39,25 @@ citibike.getStations(null, function(callback) {
           ]
         },
         
-        ... More stations go here ...
-        
+        ... etc ...
+
       ]
       activeStations: 304,
       totalStations: 327,
       lastUpdate: 1370713417
     }
-  */
+ *  
+ */
+ 
+var Citibike = require('..')
+  , citibike = new Citibike;
 
+/** 
+ * Retrieves Citibike Stations JSON Data and prints to console
+ *
+ */
+citibike.getStations(null, function(data) {
+  console.log("------ Printing Citibike Stations ------");
+  console.log(data);
+  console.log("------    End Citibike Stations   ------");
 });
