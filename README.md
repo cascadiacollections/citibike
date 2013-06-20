@@ -1,6 +1,6 @@
 # CitibikeNYC API Client Library for Node.js
 
-[![Build Status](https://travis-ci.org/KevinTCoughlin/citibike.png)](https://travis-ci.org/KevinTCoughlin/citibike)
+  [![Build Status](https://travis-ci.org/KevinTCoughlin/citibike.png)](https://travis-ci.org/KevinTCoughlin/citibike)
 
 ## Installation
 
@@ -16,22 +16,56 @@
       $ cd citibike
       $ npm install
 
-## Documentation
+## Requirements
 
+  You can install citibike and its dependencies with npm: 
+    
+      $ npm install citibike
   
-## Example Usage
+  Dependencies
+  
+  * [node](http://nodejs.org/) v0.6 +
 
-## Implemented API Endpoints
+## Notes
 
-  * Stations
-  * Helmets
-  * Branches
+  * **Parameters (Not Currently Supported)**
+  
+    Since Citibike has not released their Official API the module does not support parameters. 
+    Once either the supported query string parameters are discovered or the official API is released 
+    the module will support params.
+
+    If you discover supported parameters please post an issue or fork the code so that they can be implemented.
+  
+  
+## API Documentation
+
+  * Stations - .getStations( params, callback )
+    
+        citibike.getStations(null, function(data) {
+          console.log(data);
+        });
+
+  * Branches - .getBranches( params, callback )
+
+        citibike.getBranches(null, function(data) {
+          console.log(data);
+        });
+        
+  * Helmets - .getHelmets( params, callback )
+
+        citibike.getHelmets(null, function(data) {
+          console.log(data);
+        });
 
 ## Testing
 
   Issue the following Make command in the top directory to run the mocha.js test cases:
   
       $ make test
+
+## Contributors
+
+  * [Brad Dickason](https://github.com/bdickason)
 
 ## LICENSE
 
