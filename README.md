@@ -39,19 +39,19 @@
   
 ## API Documentation
 
-  * Stations - .getStations( params, callback )
+  * **Stations - .getStations( params, callback )**
     
         citibike.getStations(null, function(data) {
           console.log(data);
         });
 
-  * Branches - .getBranches( params, callback )
+  * **Branches - .getBranches( params, callback )**
 
         citibike.getBranches(null, function(data) {
           console.log(data);
         });
         
-  * Helmets - .getHelmets( params, callback )
+  * **Helmets - .getHelmets( params, callback )**
 
         citibike.getHelmets(null, function(data) {
           console.log(data);
