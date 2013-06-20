@@ -31,6 +31,8 @@ You can find the docs for the API of this client at [https://github.com/KevinTCo
 
 ## Testing
 
+Uses Mocha.js
+
 ## LICENSE
 
 Citibike: Copyright (c) 2013 Kevin Coughlin
