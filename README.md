@@ -35,7 +35,10 @@
     the module will support params.
 
     If you discover supported parameters please post an issue or fork the code so that they can be implemented.
-  
+
+## Examples
+
+  Demos of the citibike module are located in: [./examples](https://github.com/KevinTCoughlin/citibike/tree/master/examples)
   
 ## API Documentation
 
