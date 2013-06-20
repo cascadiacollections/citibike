@@ -1,6 +1,6 @@
 # Citibike [![Build Status](https://travis-ci.org/KevinTCoughlin/citibike.png)](https://travis-ci.org/KevinTCoughlin/citibike)
 
-  A Node.js wrapper for Citibike's REST API.
+  A [node.js](http://nodejs.org/) wrapper for [Citibike](http://citibikenyc.com/)'s REST API.
 
 ## Installation
 
