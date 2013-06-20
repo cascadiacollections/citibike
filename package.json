@@ -9,7 +9,7 @@
     "nyc",
     "api"
   ],
-  "version": "2.0.0",
+  "version": "2.1.0",
   "author": "Kevin Coughlin <kevintcoughlin@gmail.com>",
   "contributors": [
     "Brad Dickason <https://twitter.com/bdickason>"
@@ -20,12 +20,10 @@
     "url": "git@github.com:KevinTCoughlin/citibike.git"
   },
   "bugs": "https://github.com/LearnBoost/knox/issues",
-  "scripts": { 
-    "test": "mocha" 
+  "scripts": {
+    "test": "mocha"
   },
-  "dependencies": {
-
-  },
+  "dependencies": {},
   "devDependencies": {
     "mocha": "*"
   },
