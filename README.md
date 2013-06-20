@@ -1,4 +1,6 @@
-# CitibikeNYC API Client Library for Node.js
+# Citibike
+
+  A Node.js wrapper for Citibike's REST API.
 
   [![Build Status](https://travis-ci.org/KevinTCoughlin/citibike.png)](https://travis-ci.org/KevinTCoughlin/citibike)
 
