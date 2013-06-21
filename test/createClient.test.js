@@ -15,7 +15,7 @@ describe('Create citibike client', function () {
 			headers: {
 				'Accept': '*/*',
 				'Connection': 'close',
-				'User-Agent': 'node-Citibike/'
+				'User-Agent': 'node-citibike/'
 			},
 
 			rest_base: 				'http://appservices.citibikenyc.com/',
@@ -46,7 +46,7 @@ describe('Create citibike client', function () {
 			headers: {
 				'Accept': '*/*',
 				'Connection': 'close',
-				'User-Agent': 'node-Citibike/'
+				'User-Agent': 'node-citibike/'
 			},
 
 			rest_base: 				'http://appservices.citibikenyc.com/',
