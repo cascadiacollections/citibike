@@ -48,6 +48,48 @@
           console.log(data);
         });
 
+  * **Example JSON Response**
+
+        {
+          "ok": true,
+          "meta": [],
+          "results": [
+              {
+                  "id": 72,
+                  "status": "Active",
+                  "latitude": 40.76727216,
+                  "longitude": -73.99392888,
+                  "label": "W 52 St & 11 Ave",
+                  "stationAddress": "",
+                  "availableBikes": 12,
+                  "availableDocks": 22,
+                  "nearbyStations": [
+                      {
+                          "id": 480,
+                          "distance": 0.17780736685282
+                      },
+                      {
+                          "id": 513,
+                          "distance": 0.28502152791732
+                      },
+                      {
+                          "id": 508,
+                          "distance": 0.30285853404336
+                      },
+                      {
+                          "id": 495,
+                          "distance": 0.3196273377671
+                      },
+                      {
+                          "id": 530,
+                          "distance": 0.3430221582592
+                      }
+                  ]
+              },
+              ... more stations ...
+          ],
+        "activeStations":308,"totalStations":313,"lastUpdate":1371908767}
+
   * **Branches - .getBranches( params, callback )**
 
         citibike.getBranches(null, function(data) {
