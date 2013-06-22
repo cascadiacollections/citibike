@@ -48,7 +48,7 @@
           console.log(data);
         });
 
-  * **Example JSON Response**
+  * **Sample JSON Response**
 
         {
           "ok": true,
@@ -96,11 +96,30 @@
           console.log(data);
         });
         
+  * **Sample Branches JSON Response**
+  
+        {"ok": true, "meta": [], "results":[
+          { "id":1, "latitude":40.7086647301912, "longitude":-74.0108752995729, "label":"120 Broadway" },
+          { "id":2, "latitude":40.7533264160156, "longitude":-73.9794006347656, "label":"330 Madison Ave" },
+          { "id":3, "latitude":40.7042541503906, "longitude":-74.0070037841797, "label":"111 Wall St" },
+          ... more branches ...
+        ],"lastUpdate": 1367853735}
+        
   * **Helmets - .getHelmets( params, callback )**
 
         citibike.getHelmets(null, function(data) {
           console.log(data);
         });
+  
+  * **Sample Helmets JSON Response**
+  
+        {"ok": true, "meta": [], "results":[
+          { "id":5002, "address":"571 Courtlandt Av", "latitude":40.8170769363642, "longitude":-73.9193703979254, "label":"Neighborhood Cycle, Inc." },
+          { "id":5008, "address":"178 Graham Av", "latitude":40.7078323364258, "longitude":-73.9429473876953, "label":"Graham Bicycle Discount Center" },
+          { "id":5000, "address":"4055 White Plains Rd", "latitude":40.8901315927505, "longitude":-73.8593445718288, "label":"Arrow Cycle, Inc" },
+          { "id":5001, "address":"33 E 170th St", "latitude":40.8400574326515, "longitude":-73.9171025902033, "label":"Crosstown Bicycles" },
+          ... more helmet locations ...
+        ],"lastUpdate": 1367853737}
 
 ## Testing
 
