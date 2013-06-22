@@ -1,7 +1,7 @@
 2.1.3 / 2013-06-22
 ==================
 
- * Formatting fixes
+ * Minor Formatting
  * Added documentation for sample JSON responses
 
 2.1.2 / 2013-06-20
