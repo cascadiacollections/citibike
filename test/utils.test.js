@@ -1,8 +1,11 @@
+/* Tests for Citibike Utility functions
+   Test Framework: Mocha (https://github.com/visionmedia/mocha)
+   Assertions: Should (https://github.com/visionmedia/should.js/) */
+
 var Citibike = require('..')
   , utils = require('../lib/utils')
   , assert = require('assert');
 
-/** Tests for Citibike Utility Functions */
 describe('Citibike.utils', function () {
   describe('.merge()', function () {
   	it('should return an object with the second object\'s values merged with the first.');

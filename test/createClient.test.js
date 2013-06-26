@@ -1,8 +1,12 @@
+/** Tests for Citibike Client Creation
+   Test Framework: Mocha (https://github.com/visionmedia/mocha)
+   Assertions: Should (https://github.com/visionmedia/should.js/) */
+
+
 var Citibike = require('..');
 var utils = require('../lib/utils');
 var should = require ('should');
 
-/** Tests for Citibike Client Creation */
 describe('Create citibike client', function () {
   describe('Correct Defaults', function () {
     it('should be created with correct defaults', function () {

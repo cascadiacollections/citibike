@@ -1,3 +1,7 @@
+/** Tests for HTTP GET requests
+   Test Framework: Mocha (https://github.com/visionmedia/mocha)
+   Assertions: Should (https://github.com/visionmedia/should.js/) */
+
 var Citibike = require('..'),
     should = require('should');
 
