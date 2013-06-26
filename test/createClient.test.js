@@ -20,11 +20,11 @@ describe('Create citibike client', function () {
 				'User-Agent': 'node-citibike/'
 			},
 
-			restBase: 'http://appservices.citibikenyc.com/',
-			helmetUrl: 'v1/helmet/list',
-			branchUrl: 'v1/branch/list',
-			stationsUrl: 'data2/stations.php',
-			stationsStreamUrl: 'data2/stations.php?updateOnly=true'
+			restBase: 'http://appservices.citibikenyc.com',
+			helmetsURL: '/v1/helmet/list',
+			branchesURL: '/v1/branch/list',
+			stationsURL: '/data2/stations.php',
+			stationsStreamURL: '/data2/stations.php?updateOnly=true'
 		};
 
         var citibike = new Citibike();
@@ -33,11 +33,11 @@ describe('Create citibike client', function () {
 
     it('should have correct API endpoints as defaults', function () {
 		var citibike = new Citibike();
-		citibike.defaults.restBase.should.equal('http://appservices.citibikenyc.com/');
-		citibike.defaults.helmetUrl.should.equal('v1/helmet/list');
-		citibike.defaults.branchUrl.should.equal('v1/branch/list');
-		citibike.defaults.stationsUrl.should.equal('data2/stations.php');
-		citibike.defaults.stationsStreamUrl.should.equal('data2/stations.php?updateOnly=true');
+		citibike.defaults.restBase.should.equal('http://appservices.citibikenyc.com');
+		citibike.defaults.helmetsURL.should.equal('/v1/helmet/list');
+		citibike.defaults.branchesURL.should.equal('/v1/branch/list');
+		citibike.defaults.stationsURL.should.equal('/data2/stations.php');
+		citibike.defaults.stationsStreamURL.should.equal('/data2/stations.php?updateOnly=true');
     });
 
     it('should merge options passed as parameter with defaults', function() {
@@ -51,11 +51,11 @@ describe('Create citibike client', function () {
 				'User-Agent': 'node-citibike/'
 			},
 
-			restBase: 'http://appservices.citibikenyc.com/',
-			helmetUrl: 'v1/helmet/list',
-			branchUrl: 'v1/branch/list',
-			stationsUrl: 'data2/stations.php',
-			stationsStreamUrl: 'data2/stations.php?updateOnly=true',
+			restBase: 'http://appservices.citibikenyc.com',
+			helmetsURL: '/v1/helmet/list',
+			branchesURL: '/v1/branch/list',
+			stationsURL: '/data2/stations.php',
+			stationsStreamURL: '/data2/stations.php?updateOnly=true'
 
 		},
       options = {
