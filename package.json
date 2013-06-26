@@ -30,7 +30,8 @@
   "devDependencies": {
     "mocha": "*",
     "supertest": "*",
-    "assert": "*"
+    "assert": "*",
+    "should": ">= 1.2.2"
   },
   "directories": {
     "lib": "./lib"

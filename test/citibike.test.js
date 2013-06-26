@@ -1,31 +1,31 @@
-/*
-"use strict";
 
-var Citibike = require('..')
-  , assert = require('assert');
+// "use strict";
 
-beforeEach(function(done){
-  var citibike = new Citibike();
-})
+var Citibike = require('..'),
+    should = require('should');
+
+var citibike;
+
+beforeEach(function(){
+  citibike = new Citibike();
+});
 
 describe('Citibike.get()', function() {
-  specify('HTTP GET request', function (done) {
-    it('should throw error if callback is not typeof function', function () {
-      assert.throws(
-        function () { 
-            citibike.get(null, null, 'string'); 
-        }
-      );
-    });
+  it('should throw error if callback is not typeof function', function () {
+    (function() {
+      citibike.get(null, null, 'string')
+    }).should.throwError('ERROR: Invalid callback function.');
 
+
+    /*
     it('should successfully complete request', function (done) {
       citibike.get(null, null, function(data) {
         done();
       });
-    });
+    }); */
   });
 });
-
+/*
 describe('Citibike.getStations()', function () {
   specify('HTTP GET request', function (done) {
     it('should successfully complete request', function (done) {
