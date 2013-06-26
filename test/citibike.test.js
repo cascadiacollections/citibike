@@ -28,40 +28,40 @@ describe('Citibike.get()', function() {
     var url=citibike.defaults.rest_base + citibike.defaults.helmet_url;
 
     citibike.get(url, null, function(data) {
-      data.should.not.equal(null);
-      data.results.should.not.equal(null);
+      should.exist(data);
+      should.exist(data.results);
+      data.results.should.not.be.empty;
       done();
     });
   });
 });
-/*
+
 describe('Citibike.getStations()', function () {
-  specify('HTTP GET request', function (done) {
     it('should successfully complete request', function (done) {
       citibike.getStations(null, function(data) {
+        should.exist(data);
+        data.results.should.not.be.empty;
         done();
       });
     });
-  });
 });
 
 describe('Citibike.getBranches()', function () {
-  specify('HTTP GET request', function (done) {
     it('should successfully complete request', function (done) {
       citibike.getBranches(null, function(data) {
+        should.exist(data);
+        data.results.should.not.be.empty;
         done();
       });
     });
-  });
 });
 
 describe('Citibike.getHelmets()', function () {
-  specify('HTTP GET request', function (done) {
     it('should successfully complete request', function (done) {
       citibike.getHelmets(null, function(data) {
+        should.exist(data);
+        data.results.should.not.be.empty;
         done();
       });
     });
-  });
 });
-*/
