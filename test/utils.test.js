@@ -1,7 +1,9 @@
-/* Tests for Citibike Utility functions
-   Test Framework: Mocha (http://visionmedia.github.io/mocha/)
-   Assertions: Should (https://github.com/visionmedia/should.js/) */
-
+/** 
+ * Tests for HTTP GET requests
+ * Test Framework: Mocha (http://visionmedia.github.io/mocha/)
+ * Assertions: Should (https://github.com/visionmedia/should.js/) 
+ */
+ 
 var Citibike = require('..'),
     utils = require('../lib/utils'),
     should = require('should');
