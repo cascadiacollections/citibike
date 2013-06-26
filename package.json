@@ -25,7 +25,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "mocha": "*"
+    "mocha": ">= 1.11.0",
+    "should": ">= 1.2.2"
   },
   "directories": {
     "lib": "./lib"
