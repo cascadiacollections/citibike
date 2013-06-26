@@ -28,7 +28,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "mocha": "*"
+    "mocha": "*",
+    "supertest": "*",
+    "assert": "*"
   },
   "directories": {
     "lib": "./lib"
