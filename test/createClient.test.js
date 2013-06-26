@@ -12,7 +12,7 @@ describe('Create citibike client', function () {
     it('should be created with correct defaults', function () {
 
 		var defaults = {
-			api_key: null,
+			apiKey: null,
 
 			headers: {
 				'Accept': '*/*',
@@ -20,11 +20,11 @@ describe('Create citibike client', function () {
 				'User-Agent': 'node-citibike/'
 			},
 
-			rest_base: 'http://appservices.citibikenyc.com/',
-			helmet_url: 'v1/helmet/list',
-			branch_url: 'v1/branch/list',
-			stations_url: 'data2/stations.php',
-			stations_stream_url: 'data2/stations.php?updateOnly=true'
+			restBase: 'http://appservices.citibikenyc.com/',
+			helmetUrl: 'v1/helmet/list',
+			branchUrl: 'v1/branch/list',
+			stationsUrl: 'data2/stations.php',
+			stationsStreamUrl: 'data2/stations.php?updateOnly=true'
 		};
 
         var citibike = new Citibike();
@@ -33,17 +33,17 @@ describe('Create citibike client', function () {
 
     it('should have correct API endpoints as defaults', function () {
 		var citibike = new Citibike();
-		citibike.defaults.rest_base.should.equal('http://appservices.citibikenyc.com/');
-		citibike.defaults.helmet_url.should.equal('v1/helmet/list');
-		citibike.defaults.branch_url.should.equal('v1/branch/list');
-		citibike.defaults.stations_url.should.equal('data2/stations.php');
-		citibike.defaults.stations_stream_url.should.equal('data2/stations.php?updateOnly=true');
+		citibike.defaults.restBase.should.equal('http://appservices.citibikenyc.com/');
+		citibike.defaults.helmetUrl.should.equal('v1/helmet/list');
+		citibike.defaults.branchUrl.should.equal('v1/branch/list');
+		citibike.defaults.stationsUrl.should.equal('data2/stations.php');
+		citibike.defaults.stationsStreamUrl.should.equal('data2/stations.php?updateOnly=true');
     });
 
     it('should merge options passed as parameter with defaults', function() {
 
 		var defaults = {
-			api_key: null,
+			apiKey: null,
 
 			headers: {
 				'Accept': '*/*',
@@ -51,15 +51,15 @@ describe('Create citibike client', function () {
 				'User-Agent': 'node-citibike/'
 			},
 
-			rest_base: 'http://appservices.citibikenyc.com/',
-			helmet_url: 'v1/helmet/list',
-			branch_url: 'v1/branch/list',
-			stations_url: 'data2/stations.php',
-			stations_stream_url: 'data2/stations.php?updateOnly=true',
+			restBase: 'http://appservices.citibikenyc.com/',
+			helmetUrl: 'v1/helmet/list',
+			branchUrl: 'v1/branch/list',
+			stationsUrl: 'data2/stations.php',
+			stationsStreamUrl: 'data2/stations.php?updateOnly=true',
 
 		},
       options = {
-        api_key: 'users_key'
+        apiKey: 'users_key'
       };
 
       var citibike = new Citibike(options);

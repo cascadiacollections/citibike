@@ -26,7 +26,7 @@ describe('Citibike.get()', function() {
   });
 
   it('should successfully complete a request', function (done) {
-    var url=citibike.defaults.rest_base + citibike.defaults.helmet_url;
+    var url=citibike.defaults.restBase + citibike.defaults.helmetUrl;
 
     citibike.get(url, null, function(data) {
       should.exist(data);
