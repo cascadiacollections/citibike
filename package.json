@@ -7,9 +7,12 @@
     "citi",
     "bike",
     "nyc",
-    "api"
+    "api",
+    "citibike",
+    "rest",
+    "transportation"
   ],
-  "version": "2.1.2",
+  "version": "2.1.3",
   "author": "Kevin Coughlin <kevintcoughlin@gmail.com>",
   "contributors": [
     "Brad Dickason <https://twitter.com/bdickason>"
@@ -25,6 +28,8 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "supertest": "*",
+    "assert": "*",
     "mocha": ">= 1.11.0",
     "should": ">= 1.2.2"
   },
