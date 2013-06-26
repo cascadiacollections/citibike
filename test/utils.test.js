@@ -1,5 +1,3 @@
-"use strict";
-
 var Citibike = require('..')
   , utils = require('../lib/utils')
   , assert = require('assert');

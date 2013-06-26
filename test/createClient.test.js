@@ -1,5 +1,3 @@
-"use strict";
-
 var Citibike = require('..');
 var utils = require('../lib/utils');
 var should = require ('should');

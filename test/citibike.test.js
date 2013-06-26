@@ -1,6 +1,3 @@
-
-// "use strict";
-
 var Citibike = require('..'),
     should = require('should');
 
