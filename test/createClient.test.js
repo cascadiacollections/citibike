@@ -1,5 +1,5 @@
 /** Tests for Citibike Client Creation
-   Test Framework: Mocha (https://github.com/visionmedia/mocha)
+   Test Framework: Mocha (http://visionmedia.github.io/mocha/)
    Assertions: Should (https://github.com/visionmedia/should.js/) */
 
 
