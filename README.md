@@ -24,7 +24,7 @@
   
   Dependencies
   
-  * [node](http://nodejs.org/) v0.6 +
+  * [node](http://nodejs.org/) v0.8 +
 
 ## Notes
 
