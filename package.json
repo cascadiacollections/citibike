@@ -29,7 +29,6 @@
   "dependencies": {},
   "devDependencies": {
     "supertest": "*",
-    "assert": "*",
     "mocha": ">= 1.11.0",
     "should": ">= 1.2.2"
   },
