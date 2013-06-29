@@ -16,16 +16,8 @@ beforeEach(function(){
   citibike = new Citibike();
 });
 
-/* DELETE ME 
-        restBase:              'http://appservices.citibikenyc.com',
-        helmetsURL:            '/v1/helmet/list',
-        branchesURL:           '/v1/branch/list',
-        stationsURL:           '/data2/stations.php',
-        stationsStreamURL:     '/data2/stations.php?updateOnly=true', // TODO : make param not separate url
-*/
-
 describe('Citibike API - Branches', function () {
-    it('responds with json', function (done) {
+    it('responds with json and proper data', function (done) {
       request
         .get(citibike.defaults.branchesURL)
         .set('Accept', 'application/json')
@@ -51,14 +43,16 @@ describe('Citibike API - Branches', function () {
             ],
             lastUpdate: 1367853737
           } */
-          
+
           res.body.ok.should.eql(true);
           res.body.results.should.not.be.empty;
 
-          res.body.results[0].id.should.be.a('number');
-          res.body.results[0].latitude.should.be.a('number');
-          res.body.results[0].latitude.should.be.a('number');
-          res.body.results[0].label.should.be.a('string');
+          var sampleResult = res.body.results[0];
+
+          sampleResult.id.should.be.a('number');
+          sampleResult.latitude.should.be.a('number');
+          sampleResult.latitude.should.be.a('number');
+          sampleResult.label.should.be.a('string');
 
           done();
         });
@@ -66,7 +60,7 @@ describe('Citibike API - Branches', function () {
 });
 
 describe('Citibike API - Helmets', function () {
-    it('responds with json', function (done) {
+    it('responds with json and proper data', function (done) {
       request
         .get(citibike.defaults.helmetsURL)
         .set('Accept', 'application/json')
@@ -97,14 +91,75 @@ describe('Citibike API - Helmets', function () {
           res.body.ok.should.eql(true);
           res.body.results.should.not.be.empty;
 
-          res.body.results[0].id.should.be.a('number');       
-          res.body.results[0].address.should.be.a('string');
-          res.body.results[0].latitude.should.be.a('number');
-          res.body.results[0].latitude.should.be.a('number');
-          res.body.results[0].label.should.be.a('string');
+          var sampleResult = res.body.results[0];
+
+          sampleResult.id.should.be.a('number');       
+          sampleResult.address.should.be.a('string');
+          sampleResult.latitude.should.be.a('number');
+          sampleResult.latitude.should.be.a('number');
+          sampleResult.label.should.be.a('string');
 
           done();
         });
     });
 });
 
+describe('Citibike API - Stations', function () {
+    it('responds with json and proper data', function (done) {
+      request
+        .get(citibike.defaults.stationsURL)
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end(function(err, res) {
+          should.not.exist(err);
+
+          // Headers
+          res.header['content-type'].should.eql('application/json; charset=utf8');
+
+          // Content
+          /* Expected Response:
+          {
+            ok: true,
+            meta: [ ],
+            results: [
+              {
+                id: 72,
+                status: "Active",
+                latitude: 40.76727216,
+                longitude: -73.99392888,
+                label: "W 52 St & 11 Ave",
+                stationAddress: "",
+                availableBikes: 8,
+                availableDocks: 26,
+                nearbyStations: [
+                  {
+                  id: 480,
+                  distance: 0.17780736685282
+                  }
+                ]
+              } 
+            ],
+            lastUpdate: 1367853737
+          } */
+
+          res.body.ok.should.eql(true);
+          res.body.results.should.not.be.empty;
+
+          var sampleResult = res.body.results[0];
+
+          sampleResult.id.should.be.a('number');
+          sampleResult.status.should.be.a('string');
+          sampleResult.latitude.should.be.a('number');
+          sampleResult.latitude.should.be.a('number');
+          sampleResult.label.should.be.a('string');
+          sampleResult.stationAddress.should.be.a('string');
+          sampleResult.availableBikes.should.be.a('number');
+          sampleResult.availableDocks.should.be.a('number');
+          sampleResult.nearbyStations.should.not.be.empty;
+          sampleResult.nearbyStations[0].id.should.be.a('number');
+          sampleResult.nearbyStations[0].distance.should.be.a('number');
+
+          done();
+        });
+    });
+});
