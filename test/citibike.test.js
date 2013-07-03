@@ -10,7 +10,7 @@ var Citibike = require('..'),
 var citibike;
 
 beforeEach(function(){
-  citibike = new Citibike();
+  citibike = new Citibike;
 });
 
 describe('Citibike.get()', function() {
