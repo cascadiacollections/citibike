@@ -1,6 +1,8 @@
 # Citibike [![Build Status](https://travis-ci.org/KevinTCoughlin/citibike.png)](https://travis-ci.org/KevinTCoughlin/citibike) [![Dependency Status](https://gemnasium.com/KevinTCoughlin/citibike.png)](https://gemnasium.com/KevinTCoughlin/citibike)
 
   A [node.js](http://nodejs.org/) wrapper for [Citibike](http://citibikenyc.com/)'s REST API.
+  
+  Now available in [PHP](https://github.com/KevinTCoughlin/citibike.php)!
 
 ## Installation
 
