@@ -47,6 +47,16 @@ describe('Citibike.getStations()', function () {
         done();
       });
     });
+    it('should successfully complete request with params', function (done) {
+      citibike.getStations({updateOnly: "true"}, function(data) {
+        should.exist(data);
+        data.results.should.not.be.empty;
+        sampleResult = data.results[0];
+        should.exist(sampleResult.availableBikes);
+        should.not.exist(sampleResult.latitude);
+        done();
+      });
+    });
 });
 
 describe('Citibike.getBranches()', function () {
