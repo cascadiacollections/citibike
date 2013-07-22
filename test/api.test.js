@@ -162,4 +162,46 @@ describe('Citibike API - Stations', function () {
           done();
         });
     });
+
+    it('responds with json and only updated data', function (done) {
+      request
+        .get(citibike.defaults.stationsStreamURL)
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end(function(err, res) {
+          should.not.exist(err);
+
+          // Headers
+          res.header['content-type'].should.eql('application/json; charset=utf8');
+
+          // Content
+          /* Expected Response:
+          {
+            ok: true,
+            meta: [ ],
+            results: [
+              {
+                id: 72,
+                status: "Active",
+                availableBikes: 8,
+                availableDocks: 26
+              }
+            ],
+            lastUpdate: 1367853737
+          } */
+
+          res.body.ok.should.eql(true);
+          res.body.results.should.not.be.empty;
+
+          var sampleResult = res.body.results[0];
+
+          sampleResult.id.should.be.a('number');
+          sampleResult.status.should.be.a('string');
+          sampleResult.availableBikes.should.be.a('number');
+          sampleResult.availableDocks.should.be.a('number');
+          should.not.exist(sampleResult.latitude);
+
+          done();
+        });
+    });
 });
