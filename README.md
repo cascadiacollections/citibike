@@ -28,16 +28,6 @@
   
   * [Node.js](http://nodejs.org/) v0.8 +
 
-## Notes
-
-  * **Parameters (Not Currently Supported)**
-  
-    Since Citibike has not released their Official API the module does not support parameters. 
-    Once either the supported query string parameters are discovered or the official API is released 
-    the module will support params.
-
-    If you discover supported parameters please post an issue or fork the code so that they can be implemented.
-
 ## Examples
 
   Demos of the citibike module are located in: [./examples](https://github.com/KevinTCoughlin/citibike/tree/master/examples)
