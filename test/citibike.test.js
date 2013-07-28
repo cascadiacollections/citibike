@@ -41,7 +41,7 @@ describe('Citibike.get()', function() {
 
 describe('Citibike.getStations()', function () {
     it('should successfully complete request', function (done) {
-      citibike.getStations(null, function(data) {
+      citibike.getStations({}, function(data) {
         should.exist(data);
         data.results.should.not.be.empty;
         done();

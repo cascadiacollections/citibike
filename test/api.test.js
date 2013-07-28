@@ -165,7 +165,7 @@ describe('Citibike API - Stations', function () {
 
     it('responds with json and only updated data', function (done) {
       request
-        .get(citibike.defaults.stationsStreamURL)
+        .get(citibike.defaults.stationsURL + '?updateOnly=true')
         .set('Accept', 'application/json')
         .expect(200)
         .end(function(err, res) {

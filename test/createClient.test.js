@@ -24,8 +24,7 @@ describe('Create citibike client', function () {
 			restBase: 'http://appservices.citibikenyc.com',
 			helmetsURL: '/v1/helmet/list',
 			branchesURL: '/v1/branch/list',
-			stationsURL: '/data2/stations.php',
-			stationsStreamURL: '/data2/stations.php?updateOnly=true'
+			stationsURL: '/data2/stations.php'
 		};
 
         var citibike = new Citibike();
@@ -38,7 +37,6 @@ describe('Create citibike client', function () {
 		citibike.defaults.helmetsURL.should.equal('/v1/helmet/list');
 		citibike.defaults.branchesURL.should.equal('/v1/branch/list');
 		citibike.defaults.stationsURL.should.equal('/data2/stations.php');
-		citibike.defaults.stationsStreamURL.should.equal('/data2/stations.php?updateOnly=true');
     });
 
     it('should merge options passed as parameter with defaults', function() {
@@ -55,9 +53,7 @@ describe('Create citibike client', function () {
 			restBase: 'http://appservices.citibikenyc.com',
 			helmetsURL: '/v1/helmet/list',
 			branchesURL: '/v1/branch/list',
-			stationsURL: '/data2/stations.php',
-			stationsStreamURL: '/data2/stations.php?updateOnly=true'
-
+			stationsURL: '/data2/stations.php'
 		},
       options = {
         apiKey: 'users_key'
