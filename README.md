@@ -1,6 +1,8 @@
 # Citibike [![Build Status](https://travis-ci.org/KevinTCoughlin/citibike.png)](https://travis-ci.org/KevinTCoughlin/citibike) [![Dependency Status](https://gemnasium.com/KevinTCoughlin/citibike.png)](https://gemnasium.com/KevinTCoughlin/citibike)
 
   A [node.js](http://nodejs.org/) wrapper for [Citibike](http://citibikenyc.com/)'s REST API.
+  
+  Now available in [PHP](https://github.com/KevinTCoughlin/citibike.php)!
 
 ## Installation
 
@@ -25,16 +27,6 @@
   Dependencies
   
   * [Node.js](http://nodejs.org/) v0.8 +
-
-## Notes
-
-  * **Parameters (Not Currently Supported)**
-  
-    Since Citibike has not released their Official API the module does not support parameters. 
-    Once either the supported query string parameters are discovered or the official API is released 
-    the module will support params.
-
-    If you discover supported parameters please post an issue or fork the code so that they can be implemented.
 
 ## Examples
 
