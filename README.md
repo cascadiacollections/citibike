@@ -122,6 +122,7 @@
 ## Contributors
 
   * [Brad Dickason](https://github.com/bdickason)
+  * [David Mazza](http://www.davidmazza.com/)
 
 ## LICENSE
 
