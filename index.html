@@ -31,11 +31,10 @@
       </header>
       <section>
         <h2>
-<a name="other-languages" class="anchor" href="#other-languages"><span class="octicon octicon-link"></span></a>Other Languages</h2>
+<a name="updates" class="anchor" href="#updates"><span class="octicon octicon-link"></span></a>Updates</h2>
 
 <ul>
-<li>PHP - <a href="https://github.com/KevinTCoughlin/citibike.php">Citibike.php</a>
-</li>
+<li>Now available in <a href="https://github.com/KevinTCoughlin/citibike.php">PHP</a>!</li>
 </ul><h2>
 <a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
 
@@ -67,19 +66,6 @@
 <li>
 <a href="http://nodejs.org/">Node.js</a> v0.8 +</li>
 </ul><h2>
-<a name="notes" class="anchor" href="#notes"><span class="octicon octicon-link"></span></a>Notes</h2>
-
-<ul>
-<li>
-<p><strong>Parameters (Not Currently Supported)</strong></p>
-
-<p>Since Citibike has not released their Official API the module does not support parameters. 
-Once either the supported query string parameters are discovered or the official API is released 
-the module will support params.</p>
-
-<p>If you discover supported parameters please post an issue or fork the code so that they can be implemented.</p>
-</li>
-</ul><h2>
 <a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples</h2>
 
 <p>Demos of the citibike module are located in: <a href="https://github.com/KevinTCoughlin/citibike/tree/master/examples">./examples</a></p>
@@ -91,7 +77,7 @@ the module will support params.</p>
 <li>
 <p><strong>Stations - .getStations( params, callback )</strong></p>
 
-<pre><code>citibike.getStations(null, function(data) {
+<pre><code>citibike.getStations({ updateOnly: true }, function(data) {
   console.log(data);
 });
 </code></pre>
@@ -192,6 +178,7 @@ the module will support params.</p>
 
 <ul>
 <li><a href="https://github.com/bdickason">Brad Dickason</a></li>
+<li><a href="http://www.davidmazza.com/">David Mazza</a></li>
 </ul><h2>
 <a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>LICENSE</h2>
 
