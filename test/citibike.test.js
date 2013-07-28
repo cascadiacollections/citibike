@@ -48,7 +48,7 @@ describe('Citibike.getStations()', function () {
       });
     });
     it('should successfully complete request with params', function (done) {
-      citibike.getStations({updateOnly: "true"}, function(data) {
+      citibike.getStations({updateOnly: true}, function(data) {
         should.exist(data);
         data.results.should.not.be.empty;
         sampleResult = data.results[0];

@@ -36,7 +36,7 @@
 
   * **Stations - .getStations( params, callback )**
     
-        citibike.getStations(null, function(data) {
+        citibike.getStations({ updateOnly: true }, function(data) {
           console.log(data);
         });
 
