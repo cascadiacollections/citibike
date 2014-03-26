@@ -128,7 +128,7 @@
 
 ## LICENSE
 
-  Citibike: Copyright (c) 2013 Kevin Coughlin
+  Citibike: Copyright (c) 2014 Kevin Coughlin
   
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the
