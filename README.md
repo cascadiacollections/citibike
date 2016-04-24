@@ -1,6 +1,7 @@
-# Citibike [![Build Status](https://travis-ci.org/KevinTCoughlin/citibike.png)](https://travis-ci.org/KevinTCoughlin/citibike) [![Dependency Status](https://gemnasium.com/KevinTCoughlin/citibike.png)](https://gemnasium.com/KevinTCoughlin/citibike)
+# Citibike 
 
-  [![NPM](https://nodei.co/npm/citibike.png)](https://nodei.co/npm/citibike/)
+  [![Build Status](https://img.shields.io/travis/KevinTCoughlin/citibike.svg?style=flat-square)](https://travis-ci.org/KevinTCoughlin/citibike)
+  [![npm version](https://img.shields.io/npm/v/citibike.svg?style=flat-square)](https://www.npmjs.com/package/citibike)
   
   A [node.js](http://nodejs.org/) wrapper for [Citibike](http://citibikenyc.com/)'s REST API.
   
@@ -128,7 +129,7 @@
 
 ## LICENSE
 
-  Citibike: Copyright (c) 2014 Kevin Coughlin
+  Citibike: Copyright (c) 2014-2016 Kevin Coughlin
   
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the
