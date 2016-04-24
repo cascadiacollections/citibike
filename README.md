@@ -1,6 +1,7 @@
-# Citibike [![Build Status](https://travis-ci.org/KevinTCoughlin/citibike.png)](https://travis-ci.org/KevinTCoughlin/citibike) [![Dependency Status](https://gemnasium.com/KevinTCoughlin/citibike.png)](https://gemnasium.com/KevinTCoughlin/citibike)
+# Citibike 
 
-  [![NPM](https://nodei.co/npm/citibike.png)](https://nodei.co/npm/citibike/)
+  [![Build Status](https://img.shields.io/travis/KevinTCoughlin/citibike.svg?style=flat-square)](https://travis-ci.org/KevinTCoughlin/citibike)
+  [![npm version](https://img.shields.io/npm/v/citibike.svg?style=flat-square)](https://www.npmjs.com/package/citibike)
   
   A [node.js](http://nodejs.org/) wrapper for [Citibike](http://citibikenyc.com/)'s REST API.
   
