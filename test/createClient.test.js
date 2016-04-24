@@ -1,7 +1,7 @@
-/** 
+/**
  * Tests for HTTP GET requests
  * Test Framework: Mocha (http://visionmedia.github.io/mocha/)
- * Assertions: Should (https://github.com/visionmedia/should.js/) 
+ * Assertions: Should (https://github.com/visionmedia/should.js/)
  */
 
 var Citibike = require('..');
@@ -23,8 +23,7 @@ describe('Create citibike client', function () {
 
 			restBase: 'http://appservices.citibikenyc.com',
 			helmetsURL: '/v1/helmet/list',
-			branchesURL: '/v1/branch/list',
-			stationsURL: '/data2/stations.php'
+			branchesURL: '/v1/branch/list'
 		};
 
         var citibike = new Citibike();
@@ -36,7 +35,6 @@ describe('Create citibike client', function () {
 		citibike.defaults.restBase.should.equal('http://appservices.citibikenyc.com');
 		citibike.defaults.helmetsURL.should.equal('/v1/helmet/list');
 		citibike.defaults.branchesURL.should.equal('/v1/branch/list');
-		citibike.defaults.stationsURL.should.equal('/data2/stations.php');
     });
 
     it('should merge options passed as parameter with defaults', function() {
@@ -52,8 +50,7 @@ describe('Create citibike client', function () {
 
 			restBase: 'http://appservices.citibikenyc.com',
 			helmetsURL: '/v1/helmet/list',
-			branchesURL: '/v1/branch/list',
-			stationsURL: '/data2/stations.php'
+			branchesURL: '/v1/branch/list'
 		},
       options = {
         apiKey: 'users_key'

@@ -1,7 +1,7 @@
-/** 
+/**
  * Tests for HTTP GET requests
  * Test Framework: Mocha (http://visionmedia.github.io/mocha/)
- * Assertions: Should (https://github.com/visionmedia/should.js/) 
+ * Assertions: Should (https://github.com/visionmedia/should.js/)
  */
 
 var Citibike = require('..'),
@@ -37,26 +37,6 @@ describe('Citibike.get()', function() {
       done();
     });
   });
-});
-
-describe('Citibike.getStations()', function () {
-    it('should successfully complete request', function (done) {
-      citibike.getStations({}, function(data) {
-        should.exist(data);
-        data.results.should.not.be.empty;
-        done();
-      });
-    });
-    it('should successfully complete request with params', function (done) {
-      citibike.getStations({updateOnly: true}, function(data) {
-        should.exist(data);
-        data.results.should.not.be.empty;
-        sampleResult = data.results[0];
-        should.exist(sampleResult.availableBikes);
-        should.not.exist(sampleResult.latitude);
-        done();
-      });
-    });
 });
 
 describe('Citibike.getBranches()', function () {

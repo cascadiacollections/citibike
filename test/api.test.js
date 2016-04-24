@@ -1,8 +1,8 @@
-/** 
+/**
  * Tests for Citibike API
  * Ensure that Citibike does not dramatically change data we need to access in their API
  * Test Framework: Mocha (http://visionmedia.github.io/mocha/)
- * Assertions: Should (https://github.com/visionmedia/should.js/) 
+ * Assertions: Should (https://github.com/visionmedia/should.js/)
  */
 
 var Citibike = require('..'),
@@ -26,7 +26,7 @@ describe('Citibike API - Branches', function () {
           should.not.exist(err);
 
           // Headers
-          res.header['content-type'].should.eql('application/json; charset=utf8');
+          res.header['content-type'].should.eql('application/json');
 
           // Content
           /* Expected Response:
@@ -49,10 +49,10 @@ describe('Citibike API - Branches', function () {
 
           var sampleResult = res.body.results[0];
 
-          sampleResult.id.should.be.a('number');
-          sampleResult.latitude.should.be.a('number');
-          sampleResult.latitude.should.be.a('number');
-          sampleResult.label.should.be.a('string');
+          sampleResult.id.should.be.type('number');
+          sampleResult.latitude.should.be.type('number');
+          sampleResult.latitude.should.be.type('number');
+          sampleResult.label.should.be.type('string');
 
           done();
         });
@@ -69,7 +69,7 @@ describe('Citibike API - Helmets', function () {
           should.not.exist(err);
 
           // Headers
-          res.header['content-type'].should.eql('application/json; charset=utf8');
+          res.header['content-type'].should.eql('application/json');
 
           // Content
           /* Expected Response:
@@ -93,113 +93,11 @@ describe('Citibike API - Helmets', function () {
 
           var sampleResult = res.body.results[0];
 
-          sampleResult.id.should.be.a('number');       
-          sampleResult.address.should.be.a('string');
-          sampleResult.latitude.should.be.a('number');
-          sampleResult.latitude.should.be.a('number');
-          sampleResult.label.should.be.a('string');
-
-          done();
-        });
-    });
-});
-
-describe('Citibike API - Stations', function () {
-    it('responds with json and proper data', function (done) {
-      request
-        .get(citibike.defaults.stationsURL)
-        .set('Accept', 'application/json')
-        .expect(200)
-        .end(function(err, res) {
-          should.not.exist(err);
-
-          // Headers
-          res.header['content-type'].should.eql('application/json; charset=utf8');
-
-          // Content
-          /* Expected Response:
-          {
-            ok: true,
-            meta: [ ],
-            results: [
-              {
-                id: 72,
-                status: "Active",
-                latitude: 40.76727216,
-                longitude: -73.99392888,
-                label: "W 52 St & 11 Ave",
-                stationAddress: "",
-                availableBikes: 8,
-                availableDocks: 26,
-                nearbyStations: [
-                  {
-                  id: 480,
-                  distance: 0.17780736685282
-                  }
-                ]
-              } 
-            ],
-            lastUpdate: 1367853737
-          } */
-
-          res.body.ok.should.eql(true);
-          res.body.results.should.not.be.empty;
-
-          var sampleResult = res.body.results[0];
-
-          sampleResult.id.should.be.a('number');
-          sampleResult.status.should.be.a('string');
-          sampleResult.latitude.should.be.a('number');
-          sampleResult.latitude.should.be.a('number');
-          sampleResult.label.should.be.a('string');
-          sampleResult.stationAddress.should.be.a('string');
-          sampleResult.availableBikes.should.be.a('number');
-          sampleResult.availableDocks.should.be.a('number');
-          sampleResult.nearbyStations.should.not.be.empty;
-          sampleResult.nearbyStations[0].id.should.be.a('number');
-          sampleResult.nearbyStations[0].distance.should.be.a('number');
-
-          done();
-        });
-    });
-
-    it('responds with json and only updated data', function (done) {
-      request
-        .get(citibike.defaults.stationsURL + '?updateOnly=true')
-        .set('Accept', 'application/json')
-        .expect(200)
-        .end(function(err, res) {
-          should.not.exist(err);
-
-          // Headers
-          res.header['content-type'].should.eql('application/json; charset=utf8');
-
-          // Content
-          /* Expected Response:
-          {
-            ok: true,
-            meta: [ ],
-            results: [
-              {
-                id: 72,
-                status: "Active",
-                availableBikes: 8,
-                availableDocks: 26
-              }
-            ],
-            lastUpdate: 1367853737
-          } */
-
-          res.body.ok.should.eql(true);
-          res.body.results.should.not.be.empty;
-
-          var sampleResult = res.body.results[0];
-
-          sampleResult.id.should.be.a('number');
-          sampleResult.status.should.be.a('string');
-          sampleResult.availableBikes.should.be.a('number');
-          sampleResult.availableDocks.should.be.a('number');
-          should.not.exist(sampleResult.latitude);
+          sampleResult.id.should.be.type('number');
+          sampleResult.address.should.be.type('string');
+          sampleResult.latitude.should.be.type('number');
+          sampleResult.latitude.should.be.type('number');
+          sampleResult.label.should.be.type('string');
 
           done();
         });
