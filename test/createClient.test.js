@@ -5,7 +5,7 @@
  */
 
 var Citibike = require('..');
-var utils = require('../lib/utils');
+var _ = require('lodash');
 var should = require ('should');
 
 describe('Create citibike client', function () {
@@ -57,7 +57,7 @@ describe('Create citibike client', function () {
       };
 
       var citibike = new Citibike(options);
-      citibike.options.should.eql(utils.merge(defaults, options));
+      citibike.options.should.eql(_.defaults(defaults, options));
     });
   });
 });
