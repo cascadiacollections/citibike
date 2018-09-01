@@ -28,7 +28,9 @@
     "test": "mocha"
   },
   "dependencies": {
-    "lodash": "^4.11.1"
+    "lodash": "^4.11.1",
+    "node-fetch": "^2.2.0",
+    "query-string": "^6.1.0"
   },
   "devDependencies": {
     "eslint": "^5.5.0",

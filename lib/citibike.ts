@@ -1,6 +1,10 @@
 import { get } from 'http';
 import { defaults } from 'lodash';
 import { stringify } from 'querystring';
+import fetch from 'node-fetch';
+import fs from 'fs';
+import { isFunction } from 'util';
+import queryString from 'query-string';
 
 /**
  * Class for handling communications with Citibike's API.
@@ -32,46 +36,21 @@ export default class Citibike {
    * Issues an HTTP Get request.
    *
    * @param {String}      url         String of the URL to issue the request to.
-   * @param {Object}      params      Object containing query string parameters to issue in the Get request.
    * @param {Function}    callback    Callback function that will be called when the processing is done.
+   * @param {Object}      params      Object containing query string parameters to issue in the Get request.
    */
-  get(url, params, callback) {
-    if (typeof params === 'function') {
-      callback = params;
-      params = null;
-    }
+  private get(url, callback, params?) {
+    if (!isFunction(callback)) throw new TypeError('callback is not a function');
+    if (url === null) throw new TypeError('url must not be null');
   
-    if (typeof callback !== 'function') {
-      throw new Error('ERROR: Invalid callback function.');
-    }
-  
-    if (url == null) {
-      throw new Error('ERROR: Invalid URL called.');
-    }
-  
-    if (url.charAt(0) == '/') { url = this.options.restBase + url; }
-  
-    if (params !== null) { url = `${url}?${stringify(params)}`; }
-  
-    // Holds data from HTTP response body
-    let body: any = [];
-    const req = get(url, (res) => {
-      res.on('data', (chunk) => {
-        body += chunk;
-      });
-  
-      res.on('end', () => {
-        callback(JSON.parse(body));
-      });
-    });
-    req.on('error', (e) => {
-      console.log(`ERROR: ${e.message}`);
-    });
+    const qs = queryString.stringify(params);
+    
+    fetch(`${this.options.restBase}${url}?${qs}`).then(res => callback(res.json()));
   }
 
   // @todo
-  getStations(arg0: null, arg1: (data: any) => void): any {
-    throw new Error("Method not implemented.");
+  getStations(params, callback): any {
+    this.get(this.options.branchesURL, params, callback);
   }
 
   /**
@@ -81,10 +60,7 @@ export default class Citibike {
    * @param {Function}    callback    Callback function that will be called when the processing is done.
    */
   getBranches(params, callback) {
-    const url = `${this.options.restBase}${this.options.branchesURL}`;
-    this.get(url, params, (data) => {
-      callback(data);
-    });
+    this.get(this.options.branchesURL, params, callback);
   }
 
   /**
@@ -94,9 +70,6 @@ export default class Citibike {
    * @param {Function}    callback    Callback function that will be called when the processing is done.
    */
   getHelmets(params, callback) {
-    const url = `${this.options.restBase}${this.options.helmetsURL}`;
-    this.get(url, params, (data) => {
-      callback(data);
-    });
+    this.get(this.options.helmetsURL, params, callback);
   }
 }
