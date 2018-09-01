@@ -31,9 +31,12 @@
     "lodash": "^4.11.1"
   },
   "devDependencies": {
-    "supertest": "*",
+    "eslint": "^5.5.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
     "mocha": ">= 1.11.0",
-    "should": ">= 1.2.2"
+    "should": ">= 1.2.2",
+    "supertest": "*"
   },
   "directories": {
     "lib": "./lib"
