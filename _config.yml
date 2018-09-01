@@ -1,0 +1,8 @@
+title: Citibike
+description: A Node.js library for Citibike's REST API
+google_analytics: UA-28569939-5
+show_downloads: true
+theme: jekyll-theme-modernist
+
+gems:
+  - jekyll-mentions
