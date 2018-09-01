@@ -8,7 +8,12 @@ import { stringify } from 'querystring';
  * @param {Object} options The Client's options object.
  */
 export default class Citibike {
-  constructor(options) {
+  getStations(arg0: null, arg1: (data: any) => void): any {
+    throw new Error("Method not implemented.");
+  }
+  defaults: { apiKey: any; headers: { Accept: string; Connection: string; 'User-Agent': string; }; restBase: string; helmetsURL: string; branchesURL: string; };
+  options: any;
+  constructor(options?) {
     this.defaults = {
       apiKey: null,
   
@@ -52,7 +57,7 @@ export default class Citibike {
     if (params !== null) { url = `${url}?${stringify(params)}`; }
   
     // Holds data from HTTP response body
-    let body = [];
+    let body: any = [];
     const req = get(url, (res) => {
       res.on('data', (chunk) => {
         body += chunk;
