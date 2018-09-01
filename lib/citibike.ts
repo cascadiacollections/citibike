@@ -8,9 +8,6 @@ import { stringify } from 'querystring';
  * @param {Object} options The Client's options object.
  */
 export default class Citibike {
-  getStations(arg0: null, arg1: (data: any) => void): any {
-    throw new Error("Method not implemented.");
-  }
   defaults: { apiKey: any; headers: { Accept: string; Connection: string; 'User-Agent': string; }; restBase: string; helmetsURL: string; branchesURL: string; };
   options: any;
   constructor(options?) {
@@ -70,8 +67,11 @@ export default class Citibike {
     req.on('error', (e) => {
       console.log(`ERROR: ${e.message}`);
     });
-  
-    return this;
+  }
+
+  // @todo
+  getStations(arg0: null, arg1: (data: any) => void): any {
+    throw new Error("Method not implemented.");
   }
 
   /**
@@ -81,11 +81,10 @@ export default class Citibike {
    * @param {Function}    callback    Callback function that will be called when the processing is done.
    */
   getBranches(params, callback) {
-    const url = this.options.restBase + this.options.branchesURL;
+    const url = `${this.options.restBase}${this.options.branchesURL}`;
     this.get(url, params, (data) => {
       callback(data);
     });
-    return this;
   }
 
   /**
@@ -95,10 +94,9 @@ export default class Citibike {
    * @param {Function}    callback    Callback function that will be called when the processing is done.
    */
   getHelmets(params, callback) {
-    const url = this.options.restBase + this.options.helmetsURL;
+    const url = `${this.options.restBase}${this.options.helmetsURL}`;
     this.get(url, params, (data) => {
       callback(data);
     });
-    return this;
   }
 }
