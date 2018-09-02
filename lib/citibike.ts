@@ -4,11 +4,6 @@ import queryString from 'query-string';
 const BASE_URL = 'http://appservices.citibikenyc.com';
 const PATH_HELMETS = '/v1/helmet/list';
 const PATH_BRANCHE = '/v1/branch/list';
-const HEADERS = {
-  Accept: '*/*',
-  Connection: 'close',
-  'User-Agent': 'node-citibike/',
-};
 
 /**
  * Class for handling communications with Citibike's API.
@@ -32,9 +27,17 @@ export default class Citibike {
    * @param {Object}      params      Object containing query string parameters to issue in the Get request.
    */
   private async get(url: string, params?: object) {
-    const qs = queryString.stringify({...{ apiKey: this._apiKey }, ...params });
+    const queryParams = {...{ apiKey: this._apiKey }, ...params };
+    const qs = queryString.stringify(queryParams);
+    const resource = `${BASE_URL}${url}?${qs}`;
+    const requestInit = { 
+      headers: {
+        'User-Agent': 'node-citibike/',
+        'Content-Type': 'application/json; charset=utf-8'
+      }
+    };
 
-    return fetch(`${BASE_URL}${url}?${qs}`);
+    return fetch(resource, requestInit);
   }
 
   /**
