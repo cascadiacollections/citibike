@@ -32,10 +32,10 @@ export default class Citibike {
    * @param {Function}    callback    Callback function that will be called when the processing is done.
    * @param {Object}      params      Object containing query string parameters to issue in the Get request.
    */
-  private static get(url: string, callback: Function, params?: object) {
+  private static async get(url: string, callback: Function, params?: object) {
     const qs = queryString.stringify(params);
 
-    fetch(`${BASE_URL}${url}?${qs}`).then(res => callback(res.json()));
+    return fetch(`${BASE_URL}${url}?${qs}`).then(res => callback(res.json()));
   }
 
   /**
@@ -44,8 +44,8 @@ export default class Citibike {
    * @param {Object}      params      Object containing query string parameters to issue in the request.
    * @param {Function}    callback    Callback function that will be called when the processing is done.
    */
-  public static getBranches(params: object, callback: Function): void {
-    Citibike.get(PATH_BRANCHE, callback, params);
+  public static async getBranches(params: object, callback: Function) {
+    return Citibike.get(PATH_BRANCHE, callback, params);
   }
 
   /**
@@ -54,7 +54,7 @@ export default class Citibike {
    * @param {Object}      params      Object containing query string parameters to issue in the request.
    * @param {Function}    callback    Callback function that will be called when the processing is done.
    */
-  public static getHelmets(params: object, callback: Function): void {
-    Citibike.get(PATH_HELMETS, callback, params);
+  public static async getHelmets(params: object, callback: Function) {
+    return Citibike.get(PATH_HELMETS, callback, params);
   }
 }
