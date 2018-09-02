@@ -26,7 +26,7 @@ export default class Citibike {
   }
 
   /**
-   * Issues an HTTP Get request.
+   * Issues an HTTP GET request.
    *
    * @param {String}      url         String of the URL to issue the request to.
    * @param {Object}      params      Object containing query string parameters to issue in the Get request.
