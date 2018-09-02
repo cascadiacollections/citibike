@@ -21,7 +21,7 @@ export default class Citibike {
    * 
    * @param {string} the API key for Citibike's API.
    */
-  constructor(apiKey?: string) {
+  constructor(apiKey: string) {
     this._apiKey = apiKey;
   }
 
