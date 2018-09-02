@@ -55,16 +55,6 @@ export default class Citibike {
   }
 
   /**
-   * Function for requesting and returning Citibike Stations data in JSON form.
-   *
-   * @param {Object}      params      Object containing query string parameters to issue in the request.
-   * @param {Function}    callback    Callback function that will be called when the processing is done.
-   */
-  public getStations(params: object, callback: Function): void {
-    this.get(this._options.branchesURL, callback, params);
-  }
-
-  /**
    * Function for requesting and returning Citibike Branch data in JSON form.
    *
    * @param {Object}      params      Object containing query string parameters to issue in the request.
