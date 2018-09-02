@@ -5,10 +5,15 @@ const BASE_URL = 'http://appservices.citibikenyc.com';
 const PATH_HELMETS = '/v1/helmet/list';
 const PATH_BRANCHE = '/v1/branch/list';
 
+interface ICitibikeAPI {
+  getHelmets(params?: object): Promise<Response>;
+  getStations(params?: object): Promise<Response>;
+}
+
 /**
  * Class for handling communications with Citibike's API.
  */
-export default class Citibike {
+export default class Citibike implements ICitibikeAPI {
   private _apiKey: string;
 
   /**
