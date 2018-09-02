@@ -29,32 +29,29 @@ export default class Citibike {
    * Issues an HTTP Get request.
    *
    * @param {String}      url         String of the URL to issue the request to.
-   * @param {Function}    callback    Callback function that will be called when the processing is done.
    * @param {Object}      params      Object containing query string parameters to issue in the Get request.
    */
-  private async get(url: string, callback: Function, params?: object) {
+  private async get(url: string, params?: object) {
     const qs = queryString.stringify({...{ apiKey: this._apiKey }, ...params });
 
-    return fetch(`${BASE_URL}${url}?${qs}`).then(res => callback(res.json()));
+    return fetch(`${BASE_URL}${url}?${qs}`);
   }
 
   /**
    * Function for requesting and returning Citibike Branch data in JSON form.
    *
    * @param {Object}      params      Object containing query string parameters to issue in the request.
-   * @param {Function}    callback    Callback function that will be called when the processing is done.
    */
-  public async getBranches(params: object, callback: Function) {
-    return this.get(PATH_BRANCHE, callback, params);
+  public async getBranches(params?: object) {
+    return this.get(PATH_BRANCHE, params);
   }
 
   /**
    * Function for requesting and returning Citibike Helmets data in JSON form.
    *
    * @param {Object}      params      Object containing query string parameters to issue in the request.
-   * @param {Function}    callback    Callback function that will be called when the processing is done.
    */
-  public async getHelmets(params: object, callback: Function) {
-    return this.get(PATH_HELMETS, callback, params);
+  public async getHelmets(params?: object) {
+    return this.get(PATH_HELMETS, params);
   }
 }
