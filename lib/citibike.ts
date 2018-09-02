@@ -10,8 +10,6 @@ interface IOptions { apiKey: any; headers: { Accept: string; Connection: string;
 
 /**
  * Class for handling communications with Citibike's API.
- *
- * @param {Object} options The Client's options object.
  */
 export default class Citibike {
   private _defaults: IOptions;
@@ -20,9 +18,9 @@ export default class Citibike {
   /**
    * Constructor.
    * 
-   * @param options API options
+   * @param {IOptions} options API options
    */
-  constructor(options?) {
+  constructor(options?: IOptions) {
     this._defaults = {
       apiKey: null,
   
