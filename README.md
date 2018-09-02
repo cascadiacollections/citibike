@@ -38,84 +38,97 @@
 ## API Documentation
 
   * **Stations - .getStations( params, callback )**
-    
-        citibike.getStations({ updateOnly: true }, function(data) {
-          console.log(data);
-        });
-
+```js
+citibike.getStations({ updateOnly: true }, function(data) {
+    console.log(data);
+});
+```
   * **Sample JSON Response**
-
+```json
+{
+    "ok": true,
+    "meta": [],
+    "results": [
         {
-          "ok": true,
-          "meta": [],
-          "results": [
-              {
-                  "id": 72,
-                  "status": "Active",
-                  "latitude": 40.76727216,
-                  "longitude": -73.99392888,
-                  "label": "W 52 St & 11 Ave",
-                  "stationAddress": "",
-                  "availableBikes": 12,
-                  "availableDocks": 22,
-                  "nearbyStations": [
-                      {
-                          "id": 480,
-                          "distance": 0.17780736685282
-                      },
-                      {
-                          "id": 513,
-                          "distance": 0.28502152791732
-                      },
-                      {
-                          "id": 508,
-                          "distance": 0.30285853404336
-                      },
-                      {
-                          "id": 495,
-                          "distance": 0.3196273377671
-                      },
-                      {
-                          "id": 530,
-                          "distance": 0.3430221582592
-                      }
-                  ]
-              },
-              ... more stations ...
-          ],
-        "activeStations":308,"totalStations":313,"lastUpdate":1371908767}
-
+            "id": 72,
+            "status": "Active",
+            "latitude": 40.76727216,
+            "longitude": -73.99392888,
+            "label": "W 52 St & 11 Ave",
+            "stationAddress": "",
+            "availableBikes": 12,
+            "availableDocks": 22,
+            "nearbyStations": [
+                {
+                    "id": 480,
+                    "distance": 0.17780736685282
+                },
+                {
+                    "id": 513,
+                    "distance": 0.28502152791732
+                },
+                {
+                    "id": 508,
+                    "distance": 0.30285853404336
+                },
+                {
+                    "id": 495,
+                    "distance": 0.3196273377671
+                },
+                {
+                    "id": 530,
+                    "distance": 0.3430221582592
+                }
+            ]
+        },
+        // ... more stations ...
+    ],
+    "activeStations": 308,
+    "totalStations": 313,
+    "lastUpdate": 1371908767
+}
+```
   * **Branches - .getBranches( params, callback )**
-
-        citibike.getBranches(null, function(data) {
-          console.log(data);
-        });
-        
+```js
+citibike.getBranches(null, function(data) {
+    console.log(data);
+});
+```   
   * **Sample Branches JSON Response**
-  
-        {"ok": true, "meta": [], "results":[
-          { "id":1, "latitude":40.7086647301912, "longitude":-74.0108752995729, "label":"120 Broadway" },
-          { "id":2, "latitude":40.7533264160156, "longitude":-73.9794006347656, "label":"330 Madison Ave" },
-          { "id":3, "latitude":40.7042541503906, "longitude":-74.0070037841797, "label":"111 Wall St" },
-          ... more branches ...
-        ],"lastUpdate": 1367853735}
-        
+```json
+{
+    "ok": true,
+    "meta": [],
+    "results":[
+        { "id": 1, "latitude": 40.7086647301912, "longitude": -74.0108752995729, "label": "120 Broadway" },
+        { "id": 2, "latitude": 40.7533264160156, "longitude": -73.9794006347656, "label": "330 Madison Ave" },
+        { "id": 3, "latitude": 40.7042541503906, "longitude": -74.0070037841797, "label": "111 Wall St" },
+        // ... more branches ...
+    ],
+    "lastUpdate": 1367853735
+}
+``` 
   * **Helmets - .getHelmets( params, callback )**
-
-        citibike.getHelmets(null, function(data) {
-          console.log(data);
-        });
-  
+```js
+citibike.getHelmets(null, function(data) {
+    console.log(data);
+});
+```
   * **Sample Helmets JSON Response**
-  
-        {"ok": true, "meta": [], "results":[
-          { "id":5002, "address":"571 Courtlandt Av", "latitude":40.8170769363642, "longitude":-73.9193703979254, "label":"Neighborhood Cycle, Inc." },
-          { "id":5008, "address":"178 Graham Av", "latitude":40.7078323364258, "longitude":-73.9429473876953, "label":"Graham Bicycle Discount Center" },
-          { "id":5000, "address":"4055 White Plains Rd", "latitude":40.8901315927505, "longitude":-73.8593445718288, "label":"Arrow Cycle, Inc" },
-          { "id":5001, "address":"33 E 170th St", "latitude":40.8400574326515, "longitude":-73.9171025902033, "label":"Crosstown Bicycles" },
-          ... more helmet locations ...
-        ],"lastUpdate": 1367853737}
-
+```json
+{
+    "ok": true,
+    "meta": [],
+    "results":[
+        { "id": 5002, "address": "571 Courtlandt Av", "latitude": 40.8170769363642, "longitude": -73.9193703979254, "label": "Neighborhood Cycle, Inc." },
+        { "id": 5008, "address": "178 Graham Av", "latitude": 40.7078323364258, "longitude": -73.9429473876953, "label": "Graham Bicycle Discount Center" },
+        { "id": 5000, "address": "4055 White Plains Rd", "latitude": 40.8901315927505, "longitude": -73.8593445718288, "label": "Arrow Cycle, Inc" },
+        { "id": 5001, "address": "33 E 170th St", "latitude": 40.8400574326515, "longitude": -73.9171025902033, "label": "Crosstown Bicycles" },
+        // ... more helmet locations ...
+    ],
+    "lastUpdate": 1367853737
+}
+```
 ## Testing
 
   Issue the following Make command in the top directory to run the mocha.js test cases:
