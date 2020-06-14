@@ -1,18 +1,13 @@
-# Citibike 
+# Citibike
 
-  [![Build Status](https://img.shields.io/travis/KevinTCoughlin/citibike.svg?style=flat-square)](https://travis-ci.org/KevinTCoughlin/citibike)
-  [![npm version](https://img.shields.io/npm/v/citibike.svg?style=flat-square)](https://www.npmjs.com/package/citibike)
-  
-  A [node.js](http://nodejs.org/) wrapper for [Citibike](http://citibikenyc.com/)'s REST API.
-  
-  Now available in [PHP](https://github.com/KevinTCoughlin/citibike.php)!
+  A [Node.js](http://nodejs.org/) wrapper for [Citibike](http://citibikenyc.com/)'s REST API.
 
 ## Installation
 
   Install using the node.js package manager [npm](http://npmjs.org/):
 
       $ npm install citibike
-      
+
   Or...
 
   Install via git clone:
@@ -23,18 +18,18 @@
 
 ## Requirements
 
-  You can install citibike and its dependencies with npm: 
-    
+  You can install citibike and its dependencies with npm:
+
       $ npm install citibike
-  
+
   Dependencies
-  
+
   * [Node.js](http://nodejs.org/) v0.8 +
 
 ## Examples
 
   Demos of the citibike module are located in: [./examples](https://github.com/KevinTCoughlin/citibike/tree/master/examples)
-  
+
 ## API Documentation
 
   * **Stations - .getStations( params, callback )**
@@ -93,7 +88,7 @@ citibike.getStations({ updateOnly: true }, function(data) {
 citibike.getBranches(null, function(data) {
     console.log(data);
 });
-```   
+```
   * **Sample Branches JSON Response**
 ```json
 {
@@ -107,7 +102,7 @@ citibike.getBranches(null, function(data) {
     ],
     "lastUpdate": 1367853735
 }
-``` 
+```
   * **Helmets - .getHelmets( params, callback )**
 ```js
 citibike.getHelmets(null, function(data) {
@@ -132,7 +127,7 @@ citibike.getHelmets(null, function(data) {
 ## Testing
 
   Issue the following Make command in the top directory to run the mocha.js test cases:
-  
+
       $ make test
 
 ## Contributors
@@ -143,7 +138,7 @@ citibike.getHelmets(null, function(data) {
 ## LICENSE
 
   Citibike: Copyright (c) 2014-2016 Kevin Coughlin
-  
+
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the
   "Software"), to deal in the Software without restriction, including
@@ -151,10 +146,10 @@ citibike.getHelmets(null, function(data) {
   distribute, sublicense, and/or sell copies of the Software, and to
   permit persons to whom the Software is furnished to do so, subject to
   the following conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
