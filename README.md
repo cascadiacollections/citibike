@@ -1,11 +1,10 @@
 # Citibike 
 
-  [![Build Status](https://img.shields.io/travis/KevinTCoughlin/citibike.svg?style=flat-square)](https://travis-ci.org/KevinTCoughlin/citibike)
   [![npm version](https://img.shields.io/npm/v/citibike.svg?style=flat-square)](https://www.npmjs.com/package/citibike)
   
   A [node.js](http://nodejs.org/) wrapper for [Citibike](http://citibikenyc.com/)'s REST API.
   
-  Now available in [PHP](https://github.com/KevinTCoughlin/citibike.php)!
+  Now available in [PHP](https://github.com/cascadiacollections/citibike.php)!
 
 ## Installation
 
@@ -17,7 +16,7 @@
 
   Install via git clone:
 
-      $ git clone git://github.com/KevinTCoughlin/citibike.git
+      $ git clone git://github.com/cascadiacollections/citibike.git
       $ cd citibike
       $ npm install
 
@@ -29,11 +28,11 @@
   
   Dependencies
   
-  * [Node.js](http://nodejs.org/) v0.8 +
+  * [Node.js](https://nodejs.org/)
 
 ## Examples
 
-  Demos of the citibike module are located in: [./examples](https://github.com/KevinTCoughlin/citibike/tree/master/examples)
+  Demos of the citibike module are located in: [./examples](https://github.com/cascadiacollections/citibike/tree/master/examples)
   
 ## API Documentation
 
@@ -131,18 +130,18 @@ citibike.getHelmets(null, function(data) {
 ```
 ## Testing
 
-  Issue the following Make command in the top directory to run the mocha.js test cases:
-  
-      $ make test
+  You can test citibike:
+    
+      $ npm test
 
 ## Contributors
 
   * [Brad Dickason](https://github.com/bdickason)
-  * [David Mazza](http://www.davidmazza.com/)
+  * [David Mazza](https://www.davidmazza.com/)
 
 ## LICENSE
 
-  Citibike: Copyright (c) 2014-2016 Kevin Coughlin
+  Citibike: Copyright (c) 2014-2016 Kevin T. Coughlin
   
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the
@@ -162,5 +161,3 @@ citibike.getHelmets(null, function(data) {
   LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
   OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/KevinTCoughlin/citibike/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
