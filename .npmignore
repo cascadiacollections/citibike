@@ -1,3 +1,60 @@
-node_modules
-.*.swp
-s*.js
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.pid.lock
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Environment and configuration files
+.env
+.env.*.local
+
+# Build outputs
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+.nyc_output/
+coverage/
+
+# Miscellaneous
+*.lock-wscript
+package-lock.json*
+yarn.lock
+pnpm-lock.yaml
+.npmrc
+yarn-error.log
+.pnpm-debug.log
+
+# Docker-related files
+.dockerignore
+Dockerfile
+
+# Debugging files
+.vscode/
+*.log
+*.coverage
