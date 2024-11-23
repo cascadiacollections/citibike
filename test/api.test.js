@@ -9,7 +9,7 @@ var Citibike = require('..'),
     request = require('supertest');
 
 var citibike;
-request = request('http://appservices.citibikenyc.com');
+request = request('https://gbfs.citibikenyc.com/gbfs/gbfs.json');
 
 beforeEach(function(){
   citibike = new Citibike();
