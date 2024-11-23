@@ -14,6 +14,7 @@
     "transportation"
   ],
   "contributors": [
+    "Kevin T. Coughlin <https://twitter.com/kevintcoughlin>",
     "Brad Dickason <https://twitter.com/bdickason>",
     "David Mazza <http://www.davidmazza.com/>"
   ],
@@ -23,11 +24,11 @@
     "test": "mocha"
   },
   "dependencies": {
-    "lodash": "^4.11.1"
+    "lodash": "4.17.21"
   },
   "devDependencies": {
-    "supertest": "*",
-    "mocha": ">= 1.11.0",
-    "should": ">= 1.2.2"
+    "mocha": "10.8.2",
+    "should": "13.2.3",
+    "supertest": "7.0.0"
   }
 }

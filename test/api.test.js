@@ -4,7 +4,6 @@
  * Test Framework: Mocha (http://visionmedia.github.io/mocha/)
  * Assertions: Should (https://github.com/visionmedia/should.js/)
  */
-
 var Citibike = require('..'),
     should = require('should'),
     request = require('supertest');
