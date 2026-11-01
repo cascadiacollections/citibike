@@ -1,24 +1,18 @@
 /**
- *  Retrieves JSON data for stations, helmets, and bikes.
+ *  Retrieves Citi Bike station data from the GBFS feeds.
  */
- 
+
 var Citibike = require('..')
-  , citibike = new Citibike;
+  , citibike = new Citibike();
 
-/** Retrieves Citibike Stations JSON Data and prints to console */
+/** Retrieves Citi Bike stations (location + live availability) and prints a summary */
 citibike.getStations(null, function(data) {
-  console.log("Getting Citibike Stations...");
-  console.log(data);
+  if (!data.ok) return console.error(data.error);
+  console.log(data.activeStations + ' of ' + data.totalStations + ' stations active');
+  console.log(data.results.slice(0, 5));
 });
 
-/** Retrieves Citibike Branches JSON Data and prints to console */
-citibike.getBranches(null, function(data) {
-  console.log("Getting Citibike Branches...");
-  console.log(data);
-});
-
-/**  Retrieves Citibike Helmets JSON Data and prints to console */
+/** Branches and helmet retailers are no longer published by Citi Bike */
 citibike.getHelmets(null, function(data) {
-  console.log("Getting Citibike Helmets...");
-  console.log(data);
+  console.log('getHelmets: ' + data.error);
 });

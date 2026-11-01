@@ -1,0 +1,41 @@
+{
+  "last_updated": 1761955200,
+  "ttl": 60,
+  "version": "2.3",
+  "data": {
+    "stations": [
+      {
+        "station_id": "66db237e-0aca-11e7-82f6-3863bb44ef7c",
+        "external_id": "66db237e-0aca-11e7-82f6-3863bb44ef7c",
+        "short_name": "6926.01",
+        "name": "W 52 St & 11 Ave",
+        "lat": 40.76727216,
+        "lon": -73.99392888,
+        "region_id": "71",
+        "capacity": 39,
+        "station_type": "classic",
+        "rental_methods": ["KEY", "CREDITCARD"],
+        "has_kiosk": true,
+        "eightd_has_key_dispenser": false,
+        "electric_bike_surcharge_waiver": false,
+        "eightd_station_services": []
+      },
+      {
+        "station_id": "66dc0e99-0aca-11e7-82f6-3863bb44ef7c",
+        "external_id": "66dc0e99-0aca-11e7-82f6-3863bb44ef7c",
+        "short_name": "5329.03",
+        "name": "Broadway & W 24 St",
+        "lat": 40.7423543,
+        "lon": -73.98915076,
+        "region_id": "71",
+        "capacity": 52,
+        "station_type": "classic",
+        "rental_methods": ["KEY", "CREDITCARD"],
+        "has_kiosk": true,
+        "eightd_has_key_dispenser": false,
+        "electric_bike_surcharge_waiver": false,
+        "eightd_station_services": []
+      }
+    ]
+  }
+}
