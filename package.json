@@ -1,16 +1,21 @@
 {
   "name": "citibike",
-  "description": "Citibike API Client Library for Node.js",
-  "version": "2.3.1",
+  "description": "Citi Bike NYC (GBFS) client library for Node.js",
+  "version": "3.0.0",
   "homepage": "https://github.com/cascadiacollections/citibike",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cascadiacollections/citibike.git"
+  },
   "keywords": [
-    "citbikenyc",
+    "citibikenyc",
     "citi",
     "bike",
     "nyc",
     "api",
     "citibike",
-    "rest",
+    "gbfs",
+    "bikeshare",
     "transportation"
   ],
   "contributors": [
@@ -19,15 +24,17 @@
   ],
   "license": "MIT",
   "main": "./lib/citibike.js",
+  "files": [
+    "lib/"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "test": "mocha"
   },
-  "dependencies": {
-    "lodash": "^4.11.1"
-  },
   "devDependencies": {
-    "supertest": "*",
-    "mocha": ">= 1.11.0",
-    "should": ">= 1.2.2"
+    "mocha": "^12.0.3",
+    "should": "^13.2.3"
   }
 }

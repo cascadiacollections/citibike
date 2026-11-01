@@ -2,7 +2,7 @@
 
   [![npm version](https://img.shields.io/npm/v/citibike.svg?style=flat-square)](https://www.npmjs.com/package/citibike)
   
-  A [node.js](http://nodejs.org/) wrapper for [Citibike](http://citibikenyc.com/)'s REST API.
+  A [node.js](http://nodejs.org/) client for [Citi Bike](https://citibikenyc.com/)'s public GBFS data feeds.
   
   Now available in [PHP](https://github.com/cascadiacollections/citibike.php)!
 
@@ -16,32 +16,65 @@
 
   Install via git clone:
 
-      $ git clone git://github.com/cascadiacollections/citibike.git
+      $ git clone https://github.com/cascadiacollections/citibike.git
       $ cd citibike
       $ npm install
 
 ## Requirements
 
-  You can install citibike and its dependencies with npm: 
-    
-      $ npm install citibike
-  
-  Dependencies
-  
-  * [Node.js](https://nodejs.org/)
+  * [Node.js](https://nodejs.org/) 22 or newer (active LTS lines). No runtime dependencies.
+
+## Data source
+
+  Citi Bike retired its original `appservices.citibikenyc.com` REST API, which
+  versions 2.x of this library used. Since 3.0.0 the library reads Citi Bike's
+  public [GBFS](https://gbfs.org/) feeds (`https://gbfs.citibikenyc.com/gbfs/gbfs.json`),
+  specifically `station_information` and `station_status`, and maps them onto
+  the same `{ ok, meta, results, ... }` envelope used before.
+
+  | Method          | 3.x behavior                                                  |
+  |-----------------|---------------------------------------------------------------|
+  | `getStations()` | `station_information` + `station_status`, joined by station id |
+  | `getBranches()` | **Discontinued.** Always calls back with `ok: false`, no request is made |
+  | `getHelmets()`  | **Discontinued.** Always calls back with `ok: false`, no request is made |
+  | `get()`         | Generic GET + JSON parse for any URL (or path under `restBase`) |
+
+  See [CHANGELOG.md](./CHANGELOG.md) for the full list of breaking changes.
 
 ## Examples
 
   Demos of the citibike module are located in: [./examples](https://github.com/cascadiacollections/citibike/tree/master/examples)
-  
+
 ## API Documentation
+
+  Every callback receives a single object. When something goes wrong (network
+  error, timeout, non-2xx status, invalid JSON, or a discontinued method) the
+  object is `{ ok: false, meta: [], results: [], error: "<message>" }`, so always
+  check `data.ok` first.
+
+  * **Client - new Citibike( options )**
+```js
+var Citibike = require('citibike');
+var citibike = new Citibike({
+    // all optional; these are the defaults
+    restBase: 'https://gbfs.citibikenyc.com/gbfs/en',
+    stationInformationURL: '/station_information.json',
+    stationStatusURL: '/station_status.json',
+    timeout: 10000,               // ms
+    headers: { 'User-Agent': 'my-app/1.0' }   // merged with the defaults
+});
+```
 
   * **Stations - .getStations( params, callback )**
 ```js
-citibike.getStations({ updateOnly: true }, function(data) {
-    console.log(data);
+citibike.getStations(null, function(data) {
+    if (!data.ok) return console.error(data.error);
+    console.log(data.results);
 });
 ```
+  Pass `{ updateOnly: true }` to fetch only `station_status` (live availability,
+  no names or coordinates), like the old API's `updateOnly` flag.
+
   * **Sample JSON Response**
 ```json
 {
@@ -49,89 +82,43 @@ citibike.getStations({ updateOnly: true }, function(data) {
     "meta": [],
     "results": [
         {
-            "id": 72,
+            "id": "66db237e-0aca-11e7-82f6-3863bb44ef7c",
             "status": "Active",
+            "availableBikes": 12,
+            "availableEbikes": 3,
+            "availableDocks": 22,
+            "lastReported": 1761955201,
+            "label": "W 52 St & 11 Ave",
+            "shortName": "6926.01",
             "latitude": 40.76727216,
             "longitude": -73.99392888,
-            "label": "W 52 St & 11 Ave",
-            "stationAddress": "",
-            "availableBikes": 12,
-            "availableDocks": 22,
-            "nearbyStations": [
-                {
-                    "id": 480,
-                    "distance": 0.17780736685282
-                },
-                {
-                    "id": 513,
-                    "distance": 0.28502152791732
-                },
-                {
-                    "id": 508,
-                    "distance": 0.30285853404336
-                },
-                {
-                    "id": 495,
-                    "distance": 0.3196273377671
-                },
-                {
-                    "id": 530,
-                    "distance": 0.3430221582592
-                }
-            ]
-        },
-        // ... more stations ...
+            "capacity": 39,
+            "stationAddress": ""
+        }
     ],
-    "activeStations": 308,
-    "totalStations": 313,
-    "lastUpdate": 1371908767
+    "activeStations": 1,
+    "totalStations": 1,
+    "lastUpdate": 1761955230
 }
 ```
-  * **Branches - .getBranches( params, callback )**
-```js
-citibike.getBranches(null, function(data) {
-    console.log(data);
-});
-```   
-  * **Sample Branches JSON Response**
+  `status` is `"Active"` when GBFS reports the station as installed and renting,
+  otherwise `"Not In Service"`. `lastUpdate` is the `station_status` feed's
+  `last_updated` timestamp. Stations present in `station_status` but not (yet)
+  in `station_information` are left out of the full response.
+
+  * **Branches - .getBranches( params, callback )** and **Helmets - .getHelmets( params, callback )**
+
+  Citi Bike no longer publishes branch or helmet-retailer locations, and GBFS
+  has no equivalent. Both methods are kept so existing code does not crash, but
+  they make no request and always call back (asynchronously) with:
 ```json
-{
-    "ok": true,
-    "meta": [],
-    "results":[
-        { "id": 1, "latitude": 40.7086647301912, "longitude": -74.0108752995729, "label": "120 Broadway" },
-        { "id": 2, "latitude": 40.7533264160156, "longitude": -73.9794006347656, "label": "330 Madison Ave" },
-        { "id": 3, "latitude": 40.7042541503906, "longitude": -74.0070037841797, "label": "111 Wall St" },
-        // ... more branches ...
-    ],
-    "lastUpdate": 1367853735
-}
-``` 
-  * **Helmets - .getHelmets( params, callback )**
-```js
-citibike.getHelmets(null, function(data) {
-    console.log(data);
-});
+{ "ok": false, "meta": [], "results": [], "error": "getHelmets() is not available: ..." }
 ```
-  * **Sample Helmets JSON Response**
-```json
-{
-    "ok": true,
-    "meta": [],
-    "results":[
-        { "id": 5002, "address": "571 Courtlandt Av", "latitude": 40.8170769363642, "longitude": -73.9193703979254, "label": "Neighborhood Cycle, Inc." },
-        { "id": 5008, "address": "178 Graham Av", "latitude": 40.7078323364258, "longitude": -73.9429473876953, "label": "Graham Bicycle Discount Center" },
-        { "id": 5000, "address": "4055 White Plains Rd", "latitude": 40.8901315927505, "longitude": -73.8593445718288, "label": "Arrow Cycle, Inc" },
-        { "id": 5001, "address": "33 E 170th St", "latitude": 40.8400574326515, "longitude": -73.9171025902033, "label": "Crosstown Bicycles" },
-        // ... more helmet locations ...
-    ],
-    "lastUpdate": 1367853737
-}
-```
+
 ## Testing
 
-  You can test citibike:
-    
+  You can test citibike (tests use local GBFS fixtures and never hit the network):
+
       $ npm test
 
 ## Contributors
