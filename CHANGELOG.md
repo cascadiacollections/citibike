@@ -1,3 +1,10 @@
+Unreleased
+==========
+
+ * Fix: a connection dropped after the response headers but before the body
+   finished never called the callback. It now calls back with
+   `{ ok: false, error: 'Connection closed before response ... finished' }`.
+
 3.0.0 / 2026-11-01
 ==================
 
