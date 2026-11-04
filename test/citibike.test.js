@@ -14,7 +14,8 @@ var GBFS_ROUTES = {
   '/broken.json': { body: '{ not json' },
   '/missing.json': { status: 503, body: '{}' },
   '/empty.json': { body: '{"data":{}}' },
-  '/hang.json': { hang: true }
+  '/hang.json': { hang: true },
+  '/drop.json': { drop: '{"data":{"stations":[{"station_id":"a"' }
 };
 
 var server, citibike;
@@ -96,6 +97,16 @@ describe('Citibike.get()', function() {
     client.get(server.base + '/hang.json', function(data) {
       data.ok.should.equal(false);
       data.error.should.match(/timed out/);
+      done();
+    });
+  });
+
+  it('should report a connection dropped mid-response as ok: false', function (done) {
+    var client = new Citibike({ timeout: 2000 });
+    client.get(server.base + '/drop.json', function(data) {
+      data.ok.should.equal(false);
+      data.results.should.eql([]);
+      data.error.should.match(/Connection closed/);
       done();
     });
   });

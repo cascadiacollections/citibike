@@ -20,6 +20,11 @@ function start(routes, callback) {
     }
     if (route.hang) return; // never respond; used for timeout tests
     res.writeHead(route.status || 200, { 'Content-Type': 'application/json' });
+    if (route.drop) {
+      // send part of the body, then kill the socket mid-response
+      res.write(route.drop);
+      return setTimeout(function() { res.socket.destroy(); }, 10);
+    }
     res.end(route.body);
   });
   server.requests = [];
