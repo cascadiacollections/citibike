@@ -30,7 +30,9 @@
   versions 2.x of this library used. Since 3.0.0 the library reads Citi Bike's
   public [GBFS](https://gbfs.org/) feeds (`https://gbfs.citibikenyc.com/gbfs/gbfs.json`),
   specifically `station_information` and `station_status`, and maps them onto
-  the same `{ ok, meta, results, ... }` envelope used before.
+  the same `{ ok, meta, results, ... }` envelope used before. The feeds are
+  run by Lyft: `gbfs.json` lists the same data under `https://gbfs.lyft.com/gbfs/1.1/bkn/`,
+  which you can pass as `restBase` (with `/en` appended) if you prefer that host.
 
   | Method          | 3.x behavior                                                  |
   |-----------------|---------------------------------------------------------------|
