@@ -1,15 +1,9 @@
-Unreleased
-==========
-
- * Fix: a connection dropped after the response headers but before the body
-   finished never called the callback. It now calls back with
-   `{ ok: false, error: 'Connection closed before response ... finished' }`.
-
-3.0.0 / 2026-11-01
+3.0.0 / 2026-11-04
 ==================
 
-Citi Bike shut down the `appservices.citibikenyc.com` API that 2.x depended on,
-so every network call in 2.x hung or failed. 3.0.0 moves to Citi Bike's GBFS feeds.
+Citi Bike shut down the `appservices.citibikenyc.com` API that 2.x depended on
+(the host no longer resolves), so every network call in 2.x hung or failed.
+3.0.0 moves to Citi Bike's GBFS feeds.
 
 **Breaking changes**
 
@@ -33,6 +27,9 @@ so every network call in 2.x hung or failed. 3.0.0 moves to Citi Bike's GBFS fee
 
 **Other**
 
+ * Fix: a connection dropped after the response headers but before the body
+   finished never called the callback. It now calls back with
+   `{ ok: false, error: 'Connection closed before response ... finished' }`.
  * Tests run against a local HTTP server with GBFS-shaped fixtures; no network access.
  * CI runs on Node 22.x and 24.x with current `actions/checkout` and `actions/setup-node`;
    mocha pinned to `^12`, should to `^13`; supertest removed.
