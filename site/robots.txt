@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cascadiacollections.github.io/citibike/sitemap.xml

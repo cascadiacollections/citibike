@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Source for og-image.png, kept in the repo so the card can be regenerated
+       without a design tool. Render at exactly 1200x630, for example with
+       google-chrome --headless --screenshot --window-size=1200,630 -->
+  <title>citibike social card source</title>
+  <style>
+    html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #f7f9fc; }
+    .card {
+      box-sizing: border-box; width: 1200px; height: 630px; padding: 0 96px;
+      display: flex; align-items: center; gap: 64px;
+      background: radial-gradient(900px 500px at 15% 0%, rgba(11, 92, 171, 0.16), transparent 70%), #f7f9fc;
+      font-family: -apple-system, "SF Pro Display", "Helvetica Neue", "Noto Sans", "DejaVu Sans", Arial, sans-serif;
+      color: #14181f;
+    }
+    img { width: 240px; height: 240px; border-radius: 54px; box-shadow: 0 24px 60px rgba(11, 92, 171, 0.35); flex: none; }
+    .name { font-size: 34px; font-weight: 600; color: #5c6470; margin: 0 0 10px; }
+    h1 { margin: 0; font-size: 72px; line-height: 1.04; letter-spacing: -0.03em; font-weight: 750; }
+    .sub {
+      margin: 14px 0 0; font-size: 40px; line-height: 1.1; font-weight: 650; letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #0b5cab, #2c9be0); -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .foot { margin: 26px 0 0; font-size: 24px; color: #5c6470; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="assets/favicon.svg" alt="" />
+    <div>
+      <p class="name">citibike</p>
+      <h1>Citi Bike station data for Node.js.</h1>
+      <p class="sub">Live, in one call.</p>
+      <p class="foot">No runtime dependencies · MIT licensed</p>
+    </div>
+  </div>
+</body>
+</html>
