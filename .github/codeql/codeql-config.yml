@@ -1,0 +1,9 @@
+# Skip the vendored three.js build. It is third-party code, and CodeQL's
+# js/insecure-randomness query flags Math.random inside that bundle.
+# Everything else in the repo stays in the analysis. No queries are disabled.
+#
+# Default setup does not load this file unless the github-codeql-config-file
+# repository property points at it. The bundle is also named .min.js, which
+# the JavaScript extractor skips on its own.
+paths-ignore:
+  - 'site/vendor/**'

@@ -134,9 +134,9 @@ function checkSnapshot() {
 }
 
 function checkVendor() {
-  var file = path.join(siteDir, 'vendor', 'three-r187.js');
+  var file = path.join(siteDir, 'vendor', 'three-r187.min.js');
   var license = path.join(siteDir, 'vendor', 'three-LICENSE.txt');
-  if (!fs.existsSync(file)) return fail('site/vendor/three-r187.js is missing');
+  if (!fs.existsSync(file)) return fail('site/vendor/three-r187.min.js is missing');
   if (!fs.existsSync(license)) return fail('site/vendor/three-LICENSE.txt is missing');
   var src = fs.readFileSync(file, 'utf8');
   if (src.length < 400000 || src.length > 800000) fail('three bundle is an unexpected size (' + src.length + ')');
@@ -150,7 +150,7 @@ function checkVendor() {
   var sig = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
   if (!magic.equals(sig)) fail('hero-fallback.png is not a PNG');
   var hero = fs.readFileSync(path.join(siteDir, 'assets', 'hero.js'), 'utf8');
-  if (hero.indexOf('../vendor/three-r187.js') === -1) fail('hero.js does not load the vendored three build');
+  if (hero.indexOf('../vendor/three-r187.min.js') === -1) fail('hero.js does not load the vendored three build');
   var config = fs.readFileSync(path.join(siteDir, 'assets', 'config.js'), 'utf8');
   if (!/export const STATUS_WORKER_URL = '';/.test(config)) {
     fail('site/assets/config.js must ship with an empty STATUS_WORKER_URL');
