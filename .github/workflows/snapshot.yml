@@ -1,0 +1,62 @@
+name: Refresh station snapshot
+
+# Pulls Citi Bike's public GBFS feeds through this library and rewrites
+# site/data/stations.json and site/hero-fallback.png. Commits only when those
+# files actually change.
+#
+# A push made with the default GITHUB_TOKEN does not start other workflows, so
+# after a real commit this dispatches the existing "Deploy site and API docs"
+# workflow. That is the only publish step: GitHub Pages, never npm.
+
+on:
+  schedule:
+    # Daily, offset from the top of the hour and from Scorecard's Monday run.
+    - cron: "17 14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: station-snapshot
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Refresh station snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Write snapshot
+        run: node scripts/snapshot-stations.js
+
+      - name: Commit if the snapshot changed
+        id: commit
+        run: |
+          set -euo pipefail
+          git add site/data/stations.json site/hero-fallback.png
+          if git diff --cached --quiet; then
+            echo "Snapshot unchanged."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -s -m "data: refresh Citi Bike station snapshot"
+          git push origin HEAD
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch the Pages workflow
+        if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/master'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref master --repo "${GITHUB_REPOSITORY}"

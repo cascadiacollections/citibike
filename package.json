@@ -33,7 +33,8 @@
   "scripts": {
     "test": "mocha",
     "docs": "node scripts/build-docs.js",
-    "docs:check": "node scripts/check-site.js"
+    "docs:check": "node scripts/check-site.js",
+    "snapshot": "node scripts/snapshot-stations.js"
   },
   "devDependencies": {
     "mocha": "^12.0.3",

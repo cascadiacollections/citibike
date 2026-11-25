@@ -93,6 +93,107 @@ urls.concat(['og-image.png'].map(function (p) { return BASE + p; })).forEach(fun
   if (!fs.existsSync(target)) errors.push('sitemap/meta: ' + u + ' has no file');
 });
 
+function checkSnapshot() {
+  var file = path.join(siteDir, 'data', 'stations.json');
+  if (!fs.existsSync(file)) return errors.push('data/stations.json is missing');
+  var raw = fs.readFileSync(file);
+  if (raw.length > 150 * 1024) errors.push('data/stations.json is ' + raw.length + ' bytes (limit 150KB)');
+  var data;
+  try {
+    data = JSON.parse(raw.toString('utf8'));
+  } catch (e) {
+    return errors.push('data/stations.json is not JSON: ' + e.message);
+  }
+  if (typeof data.generatedAt !== 'number' || !isFinite(data.generatedAt)) {
+    errors.push('data/stations.json generatedAt must be a unix timestamp');
+  }
+  if (!Array.isArray(data.stations)) return errors.push('data/stations.json has no stations array');
+  if (data.stations.length < 1500 || data.stations.length > 6000) {
+    errors.push('data/stations.json has ' + data.stations.length + ' stations; expected the NYC system');
+  }
+  for (var i = 0; i < data.stations.length; i++) {
+    var row = data.stations[i];
+    if (!Array.isArray(row) || row.length !== 6 || typeof row[0] !== 'string' || !row[0]) {
+      return errors.push('data/stations.json row ' + i + ' must be [name, lat, lon, bikes, ebikes, docks]');
+    }
+    if (typeof row[1] !== 'number' || row[1] < 40.4 || row[1] > 41.1) {
+      return errors.push('data/stations.json row ' + i + ' latitude is outside the NYC area');
+    }
+    if (typeof row[2] !== 'number' || row[2] < -74.3 || row[2] > -73.6) {
+      return errors.push('data/stations.json row ' + i + ' longitude is outside the NYC area');
+    }
+    for (var k = 3; k <= 5; k++) {
+      if (typeof row[k] !== 'number' || row[k] < 0 || row[k] > 200 || row[k] !== Math.floor(row[k])) {
+        return errors.push('data/stations.json row ' + i + ' has a bad count');
+      }
+    }
+  }
+}
+
+function checkFallback() {
+  var file = path.join(siteDir, 'hero-fallback.png');
+  if (!fs.existsSync(file)) return errors.push('hero-fallback.png is missing');
+  var buf = fs.readFileSync(file);
+  if (buf.slice(0, 8).toString('hex') !== '89504e470d0a1a0a') {
+    return errors.push('hero-fallback.png is not a PNG');
+  }
+  if (buf.length < 8000) errors.push('hero-fallback.png looks empty');
+  var width = buf.readUInt32BE(16);
+  var height = buf.readUInt32BE(20);
+  if (width < 800 || height < 500) errors.push('hero-fallback.png is ' + width + 'x' + height);
+}
+
+function checkVendor() {
+  var file = path.join(siteDir, 'vendor', 'three-map.js');
+  var license = path.join(siteDir, 'vendor', 'three.LICENSE.txt');
+  if (!fs.existsSync(file)) return errors.push('vendor/three-map.js is missing');
+  var text = fs.readFileSync(file, 'utf8');
+  if (text.length < 100 * 1024) errors.push('vendor/three-map.js is unexpectedly small');
+  if (text.length > 700 * 1024) errors.push('vendor/three-map.js is unexpectedly large');
+  ['WebGLRenderer', 'OrbitControls', 'InstancedMesh', 'SPDX-License-Identifier: MIT'].forEach(function (needle) {
+    if (text.indexOf(needle) === -1) errors.push('vendor/three-map.js is missing "' + needle + '"');
+  });
+  if (!fs.existsSync(license)) return errors.push('vendor/three.LICENSE.txt is missing');
+  var lic = fs.readFileSync(license, 'utf8');
+  if (lic.indexOf('MIT License') === -1 || lic.toLowerCase().indexOf('three.js') === -1) {
+    errors.push('vendor/three.LICENSE.txt does not look like the three.js MIT license');
+  }
+}
+
+function checkHeroModules() {
+  var index = fs.readFileSync(path.join(siteDir, 'index.html'), 'utf8');
+  var head = index.slice(0, index.indexOf('</head>'));
+  if (/three-map|city-scene/.test(head)) errors.push('three.js is referenced from <head>');
+  if (index.indexOf('src="assets/hero.js"') === -1) errors.push('index.html does not load assets/hero.js');
+
+  var heroPath = path.join(siteDir, 'assets', 'hero.js');
+  var scenePath = path.join(siteDir, 'assets', 'city-scene.js');
+  if (!fs.existsSync(heroPath)) return errors.push('assets/hero.js is missing');
+  if (!fs.existsSync(scenePath)) return errors.push('assets/city-scene.js is missing');
+  var hero = fs.readFileSync(heroPath, 'utf8');
+  var scene = fs.readFileSync(scenePath, 'utf8');
+  if (/^import\s/m.test(hero)) errors.push('assets/hero.js should lazy-load the scene, not statically import it');
+  if (hero.indexOf("import('./city-scene.js')") === -1) errors.push('assets/hero.js does not lazy-import city-scene.js');
+  if (hero.indexOf('data/stations.json') === -1) errors.push('assets/hero.js does not fetch data/stations.json');
+  if (scene.indexOf('../vendor/three-map.js') === -1) errors.push('assets/city-scene.js does not import the vendored three.js build');
+
+  [heroPath, scenePath].forEach(function (file) {
+    var src = fs.readFileSync(file, 'utf8');
+    var rel = path.relative(siteDir, file);
+    var re = /(?:import\s*(?:[^'"]*?\sfrom\s*)?|import\()\s*['"](\.[^'"]+)['"]/g;
+    var match;
+    while ((match = re.exec(src))) {
+      var target = path.resolve(path.dirname(file), match[1]);
+      if (!fs.existsSync(target)) errors.push(rel + ': missing module "' + match[1] + '"');
+    }
+  });
+}
+
+checkSnapshot();
+checkFallback();
+checkVendor();
+checkHeroModules();
+
 function done() {
   if (errors.length) {
     console.error(errors.join('\n'));

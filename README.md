@@ -2,6 +2,7 @@
 
   [![npm version](https://img.shields.io/npm/v/citibike.svg?style=flat-square)](https://www.npmjs.com/package/citibike)
   Docs: https://cascadiacollections.github.io/citibike/
+  The map on that page is a daily snapshot of station positions and counts. The library itself reads the live feeds.
   
   A [node.js](http://nodejs.org/) client for [Citi Bike](https://citibikenyc.com/)'s public GBFS data feeds.
   
