@@ -1,6 +1,7 @@
 # Citibike 
 
   [![npm version](https://img.shields.io/npm/v/citibike.svg?style=flat-square)](https://www.npmjs.com/package/citibike)
+  Docs: https://cascadiacollections.github.io/citibike/
   
   A [node.js](http://nodejs.org/) client for [Citi Bike](https://citibikenyc.com/)'s public GBFS data feeds.
   
