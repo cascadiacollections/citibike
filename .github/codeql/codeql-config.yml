@@ -1,0 +1,6 @@
+name: CodeQL config
+
+# The three.js bundle is generated third-party code. Its math helpers use
+# Math.random for object ids and graphics, not for secrets.
+paths-ignore:
+  - site/vendor/**
