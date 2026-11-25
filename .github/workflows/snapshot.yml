@@ -1,19 +1,23 @@
 name: Refresh station snapshot
 
 # Pulls a fresh site/data/stations.json through this library and commits it
-# when the station rows actually changed. A push made with the default
-# GITHUB_TOKEN does not start other workflows, so a real change also
-# dispatches the existing Pages workflow. That is the only deploy this
+# when the station rows actually changed. The fallback PNG stays put: redraw
+# it with scripts/render-fallback.js when the picture should change, so the
+# daily job does not churn a binary. A push made with the default
+# GITHUB_TOKEN does not start other workflows, so a real change on master
+# also dispatches the existing Pages workflow. That is the only deploy this
 # file triggers. It never publishes to npm and never deploys the Worker.
+#
+# The cron is offset from the top of the hour and from Scorecard's Monday
+# 06:17 UTC run.
 
 on:
   schedule:
-    - cron: '17 12 * * *'
+    - cron: "17 12 * * *"
   workflow_dispatch:
 
 permissions:
-  contents: write
-  actions: write
+  contents: read
 
 concurrency:
   group: station-snapshot
@@ -24,6 +28,9 @@ jobs:
     name: Refresh snapshot and redeploy Pages if it changed
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -44,12 +51,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add site/data/stations.json
-          git commit -m "chore: refresh Citi Bike station snapshot"
-          git push
+          git commit -s -m "chore: refresh Citi Bike station snapshot"
+          git push origin HEAD
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Redeploy GitHub Pages
-        if: steps.commit.outputs.changed == 'true'
+        if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/master'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run pages.yml --ref master
+        run: gh workflow run pages.yml --ref master --repo "${GITHUB_REPOSITORY}"

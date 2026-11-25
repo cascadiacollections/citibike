@@ -146,11 +146,24 @@ function checkVendor() {
   });
   var png = path.join(siteDir, 'hero-fallback.png');
   if (!fs.existsSync(png)) return fail('site/hero-fallback.png is missing');
-  var magic = fs.readFileSync(png).subarray(0, 8);
+  var pngBuf = fs.readFileSync(png);
+  var magic = pngBuf.subarray(0, 8);
   var sig = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
   if (!magic.equals(sig)) fail('hero-fallback.png is not a PNG');
+  if (pngBuf.length < 8000) fail('hero-fallback.png looks empty (' + pngBuf.length + ' bytes)');
+  if (pngBuf.length < 24) fail('hero-fallback.png is truncated');
+  else {
+    var width = pngBuf.readUInt32BE(16);
+    var height = pngBuf.readUInt32BE(20);
+    if (width < 800 || height < 500) fail('hero-fallback.png is ' + width + 'x' + height);
+  }
   var hero = fs.readFileSync(path.join(siteDir, 'assets', 'hero.js'), 'utf8');
   if (hero.indexOf('../vendor/three-r187.min.js') === -1) fail('hero.js does not load the vendored three build');
+  if (hero.indexOf('data/stations.json') === -1) fail('hero.js does not fetch the station snapshot');
+  var indexHtml = fs.readFileSync(path.join(siteDir, 'index.html'), 'utf8');
+  var headEnd = indexHtml.indexOf('</head>');
+  var head = headEnd === -1 ? indexHtml : indexHtml.slice(0, headEnd);
+  if (/three-r187|three-map|city-scene/.test(head)) fail('three.js is referenced from <head>');
   var config = fs.readFileSync(path.join(siteDir, 'assets', 'config.js'), 'utf8');
   if (!/export const STATUS_WORKER_URL = '';/.test(config)) {
     fail('site/assets/config.js must ship with an empty STATUS_WORKER_URL');
