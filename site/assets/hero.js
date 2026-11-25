@@ -160,7 +160,7 @@ function scheduleScene() {
 }
 
 function initScene() {
-  return import('../vendor/three-r187.js').then(function (three) {
+  return import('../vendor/three-r187.min.js').then(function (three) {
     buildScene(three);
   });
 }
