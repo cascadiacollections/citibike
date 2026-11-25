@@ -1,0 +1,56 @@
+name: CodeQL
+
+# Advanced setup. Default setup does not load a config file, so it cannot
+# skip site/vendor. This workflow analyzes the same languages default setup
+# was running (JavaScript/TypeScript and GitHub Actions) and keeps the
+# weekly Sunday scan. The query suite is the CodeQL default. Our own code
+# is not excluded.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    # Matches the observed default-setup weekly run (Sunday 03:51 UTC).
+    - cron: "51 3 * * 0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: github/codeql-action/init@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - uses: github/codeql-action/analyze@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
+        with:
+          category: "/language:${{ matrix.language }}"

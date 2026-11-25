@@ -1,0 +1,5 @@
+# Skip the vendored three.js build. It is third-party code, and CodeQL's
+# js/insecure-randomness query flags Math.random inside that bundle.
+# Everything else in the repo stays in the analysis. No queries are disabled.
+paths-ignore:
+  - 'site/vendor/**'
