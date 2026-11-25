@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>citibike: Citi Bike station data for Node.js</title>
-  <meta name="description" content="A dependency-free Node.js client for Citi Bike's public GBFS feeds. Bike, e-bike and dock counts for every station in New York City." />
+  <meta name="description" content="A small Node.js client for Citi Bike's public GBFS feeds. Live bike, e-bike and dock counts for every station in New York City, with no runtime dependencies." />
   <link rel="canonical" href="https://cascadiacollections.github.io/citibike/" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
   <meta name="color-scheme" content="light dark" />
@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="citibike" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:title" content="citibike: Citi Bike station data for Node.js" />
-  <meta property="og:description" content="Bike, e-bike and dock counts for every Citi Bike station in New York City. A dependency-free Node.js client for the public GBFS feeds." />
+  <meta property="og:description" content="Live bike, e-bike and dock counts for every Citi Bike station, from Citi Bike's public GBFS feeds. No runtime dependencies." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://cascadiacollections.github.io/citibike/" />
   <meta property="og:image" content="https://cascadiacollections.github.io/citibike/og-image.png" />
@@ -23,7 +23,7 @@
   <meta property="og:image:alt" content="citibike: Citi Bike station data for Node.js" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="citibike: Citi Bike station data for Node.js" />
-  <meta name="twitter:description" content="Bike, e-bike and dock counts for every Citi Bike station in New York City. No runtime dependencies." />
+  <meta name="twitter:description" content="Live bike, e-bike and dock counts for every Citi Bike station. No runtime dependencies." />
   <meta name="twitter:image" content="https://cascadiacollections.github.io/citibike/og-image.png" />
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -61,87 +61,81 @@
   </header>
 
   <main id="main">
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-stage">
-        <canvas id="city-canvas" class="city-canvas" tabindex="0" aria-hidden="true" aria-label="Interactive map of Citi Bike stations in New York City. Bar height is bikes available. Greener bars have more e-bikes. Drag to rotate, scroll or pinch to zoom. Hover or tap a station for its name and counts."></canvas>
-        <img id="city-fallback" class="city-fallback" src="hero-fallback.png" alt="Map of Citi Bike stations across Manhattan, Brooklyn, Queens, the Bronx, and Jersey City" width="1440" height="900" decoding="async" />
-        <div id="station-tip" class="station-tip" role="tooltip" hidden></div>
-      </div>
-      <div class="wrap">
-        <div class="hero-copy">
-          <p class="eyebrow">Node.js client for Citi Bike</p>
-          <h1 id="hero-title">Every Citi Bike station,<br /><span class="grad">in one call.</span></h1>
-          <p class="lede">Bike, e-bike and dock counts for the whole New York City system. No API key. No dependencies.</p>
-          <div class="cta">
-            <button type="button" class="btn primary copy-btn" id="copy-install" data-copy="npm install citibike">
-              <span class="copy-cmd">npm install citibike</span>
-              <span class="copy-hint" aria-live="polite">Copy</span>
-            </button>
-            <a class="btn" href="https://github.com/cascadiacollections/citibike">GitHub</a>
-            <a class="btn" href="api/">API docs</a>
-          </div>
-          <p class="hero-stats" id="hero-stats">
-            <span><strong data-stat="stations">—</strong> stations</span>
-            <span><strong data-stat="bikes">—</strong> bikes</span>
-            <span><strong data-stat="ebikes">—</strong> e-bikes</span>
-            <span>snapshot taken <strong data-stat="when">—</strong></span>
-          </p>
-          <p class="legend">Taller bars, more bikes. Greener bars, more e-bikes.</p>
+    <section class="hero-scene" aria-label="Map of Citi Bike stations across New York City">
+      <img id="hero-fallback" class="hero-fallback" src="hero-fallback.png" alt="Map of Citi Bike stations across Manhattan, Brooklyn, Queens, the Bronx and Jersey City" width="840" height="1140" />
+      <canvas id="city" aria-hidden="true"></canvas>
+      <div class="hero-scrim"></div>
+      <div class="hero-copy wrap">
+        <p class="eyebrow">Node.js client for Citi Bike</p>
+        <h1>Every station in New York.<br /><span class="grad">One call away.</span></h1>
+        <p class="lede">Bike, e-bike and dock counts for the whole system, from Node, with nothing else to install.</p>
+        <div class="cta" id="install">
+          <button type="button" class="btn primary copy-btn" id="copy-install" aria-label="Copy the command npm install citibike">
+            <span class="cmd">npm install citibike</span>
+            <span class="copy-state" id="copy-state">Copy</span>
+          </button>
+          <a class="btn" href="https://github.com/cascadiacollections/citibike">GitHub</a>
+          <a class="btn" href="api/">API docs</a>
         </div>
+        <p class="note" id="npm-note" hidden>The npm registry still serves 2.x, which talks to an API Citi Bike shut down. Until 3.x is published, install from GitHub: <code>npm install github:cascadiacollections/citibike</code></p>
+        <dl class="stats">
+          <div><dt>Stations</dt><dd id="stat-stations">…</dd></div>
+          <div><dt>Bikes</dt><dd id="stat-bikes">…</dd></div>
+          <div><dt>E-bikes</dt><dd id="stat-ebikes" title="Included in the bike count">…</dd></div>
+        </dl>
+        <p class="freshness" id="freshness">Loading station snapshot…</p>
+        <p class="ticker" id="ticker" role="status" aria-live="polite"></p>
       </div>
+      <div class="zoom" id="zoom" hidden>
+        <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+        <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+      </div>
+      <div class="station-tip" id="station-tip" role="tooltip" hidden></div>
     </section>
 
     <section>
       <div class="wrap">
         <h2>Why this library</h2>
-        <p class="sub">One method does the useful work. The rest keeps a one-minute poll predictable.</p>
+        <p class="sub"><code>getStations()</code> is the product. The rest keeps that one call predictable.</p>
         <div class="grid">
           <div class="tile">
-            <h3>The whole system, joined</h3>
-            <p><code>getStations()</code> merges the name feed and the status feed, so each station arrives with bikes, e-bikes, docks and coordinates.</p>
-          </div>
-          <div class="tile">
-            <h3>A cheap refresh</h3>
-            <p><code>{ updateOnly: true }</code> skips the station list and fetches only availability. One request a minute.</p>
-          </div>
-          <div class="tile">
-            <h3>Errors that finish</h3>
-            <p>Timeouts, dropped connections, bad status codes and bad JSON all come back as <code>{ ok: false, error }</code>.</p>
+            <h3>Joined for you</h3>
+            <p>GBFS splits a station's name from its status. One callback returns both, matched by id.</p>
           </div>
           <div class="tile">
             <h3>Nothing else to install</h3>
-            <p>No runtime dependencies. Node's <code>http</code> and <code>https</code> are the whole stack. Node.js 22 or newer.</p>
+            <p>No runtime dependencies. It uses Node's built-in <code>http</code> and <code>https</code>.</p>
           </div>
           <div class="tile">
-            <h3>The same public feeds</h3>
-            <p>No key, no scraping. Point <code>restBase</code> at Lyft's mirror of the feeds if you want that host.</p>
+            <h3>Errors you can handle</h3>
+            <p>Timeouts, bad status codes, bad JSON and a socket that dies mid-body all come back as <code>{ ok: false, error }</code>.</p>
           </div>
           <div class="tile">
-            <h3>A map with a paper trail</h3>
-            <p>The picture above is a daily snapshot. The feeds send no CORS header, so a browser cannot read them. Your Node process can.</p>
+            <h3>Cheap to refresh</h3>
+            <p><code>{ updateOnly: true }</code> hits only the status feed, so a once-a-minute poll is a single request.</p>
+          </div>
+          <div class="tile">
+            <h3>Point it at either host</h3>
+            <p>The default is <code>gbfs.citibikenyc.com</code>. Pass the Lyft mirror as <code>restBase</code> if you prefer that one.</p>
+          </div>
+          <div class="tile">
+            <h3>Same envelope as before</h3>
+            <p><code>ok</code>, <code>results</code>, <code>activeStations</code>. 3.x keeps the shape 2.x callers already check.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="alt" id="install">
-      <div class="wrap">
-        <h2>Install</h2>
-        <p class="sub">Node.js 22 or newer. That is the only requirement.</p>
-        <pre><code>npm install citibike</code></pre>
-        <p class="note" id="npm-note" hidden>The npm registry still serves an older 2.x release, which talks to a Citi Bike API that no longer exists. This site documents 3.x. Until 3.x is published, install it from GitHub: <code>npm install github:cascadiacollections/citibike</code></p>
-      </div>
-    </section>
-
-    <section id="example">
+    <section class="alt" id="example">
       <div class="wrap">
         <h2>Three lines</h2>
-        <p class="sub">A station name and how many bikes are there. The callback always gets one object, so check <code>data.ok</code> first.</p>
+        <p class="sub">How many stations are renting right now.</p>
         <div class="two">
           <div>
             <p class="label">example.js</p>
-<pre><code>require('citibike')().getStations(null, (data) =&gt; {
-  if (data.ok) console.log(data.results[0].label, data.results[0].availableBikes);
+<pre><code>const citibike = new (require('citibike'))();
+citibike.getStations(null, (data) =&gt; {
+  console.log(data.ok ? data.activeStations + ' stations renting' : data.error);
 });</code></pre>
           </div>
           <div>
@@ -152,45 +146,46 @@
   "availableEbikes": 3,
   "availableDocks": 22,
   "latitude": 40.76727,
-  "longitude": -73.99393
+  "longitude": -73.99393,
+  "status": "Active"
 }</code></pre>
           </div>
         </div>
-        <p class="sub" style="margin-top:20px">Every field is in the <a href="api/#Station">API reference</a>.</p>
+        <p class="sub" style="margin-top:20px">Every field is in the <a href="api/#Station">API reference</a>. Check <code>data.ok</code> before you read <code>results</code>.</p>
       </div>
     </section>
 
-    <section class="alt" id="live-data">
+    <section id="live-data">
       <div class="wrap">
-        <h2>Live feeds, cached map</h2>
-        <p class="sub">The library reads the feeds on every call. This page cannot: Citi Bike sends no CORS header, so the map is a compact snapshot refreshed daily from the same feeds.</p>
+        <h2>The library reads the live feeds</h2>
+        <p class="sub">The map above is a cached snapshot, refreshed daily, so this page doesn't hammer Citi Bike. Install the client and you read the same public feeds the apps use. No key, no scrape.</p>
         <div class="grid">
           <div class="tile">
             <h3>About 2,500 stations</h3>
             <p>Manhattan, Brooklyn, Queens, the Bronx and Jersey City, in one response.</p>
           </div>
           <div class="tile">
-            <h3>Fresh about every minute</h3>
-            <p>The status feed publishes a one minute <code>ttl</code>. <code>lastUpdate</code> and <code>lastReported</code> say how old a reading is.</p>
+            <h3>Updated about every minute</h3>
+            <p>The status feed publishes a 60 second <code>ttl</code>. <code>lastUpdate</code> tells you how fresh a reading is.</p>
           </div>
           <div class="tile">
-            <h3>Plain GBFS</h3>
-            <p>The open format used by bike share systems worldwide. Lyft runs the feeds. No key.</p>
+            <h3>The GBFS standard</h3>
+            <p>Citi Bike publishes <a href="https://gbfs.org/">GBFS</a>. Lyft runs the feeds.</p>
           </div>
         </div>
-        <p class="sub" style="margin-top:20px">The two feeds are <a href="https://gbfs.citibikenyc.com/gbfs/en/station_information.json"><code>station_information</code></a> and <a href="https://gbfs.citibikenyc.com/gbfs/en/station_status.json"><code>station_status</code></a>. <a href="https://gbfs.org/">GBFS</a> is the spec.</p>
+        <p class="sub" style="margin-top:20px">The two feeds are <a href="https://gbfs.citibikenyc.com/gbfs/en/station_information.json"><code>station_information</code></a> and <a href="https://gbfs.citibikenyc.com/gbfs/en/station_status.json"><code>station_status</code></a>.</p>
       </div>
     </section>
 
-    <section id="upgrading">
+    <section class="alt" id="upgrading">
       <div class="wrap">
-        <h2>Coming from 2.x?</h2>
-        <p class="sub">Citi Bike shut down the <code>appservices.citibikenyc.com</code> API that 2.x called. 3.0.0 reads GBFS instead.</p>
+        <h2>Coming from 2.x</h2>
+        <p class="sub">Citi Bike shut down <code>appservices.citibikenyc.com</code>, so 3.0.0 reads GBFS instead.</p>
         <ul>
           <li>Station <code>id</code> is a string.</li>
           <li><code>availableEbikes</code>, <code>shortName</code>, <code>capacity</code> and <code>lastReported</code> are new. <code>nearbyStations</code> is gone.</li>
-          <li><code>getBranches()</code> and <code>getHelmets()</code> are discontinued. They always call back with <code>ok: false</code> and make no request.</li>
-          <li>Options you pass now override the defaults. In 2.x the defaults always won.</li>
+          <li><code>getBranches()</code> and <code>getHelmets()</code> always call back with <code>ok: false</code>. That data isn't published anymore.</li>
+          <li>Options you pass now override the defaults.</li>
         </ul>
         <p>The full list is in the <a href="https://github.com/cascadiacollections/citibike/blob/master/CHANGELOG.md">changelog</a>.</p>
       </div>
@@ -210,7 +205,6 @@
   </footer>
 
   <script type="module" src="assets/hero.js"></script>
-
   <script>
     // Show the install note only while the npm registry's latest release is
     // older than 3.x. Without JavaScript, or once 3.x is published, it stays hidden.

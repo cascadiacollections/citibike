@@ -1,0 +1,5 @@
+{
+  "name": "citibike-status-worker",
+  "private": true,
+  "type": "module"
+}

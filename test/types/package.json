@@ -1,0 +1,5 @@
+{
+  "name": "citibike-type-tests",
+  "private": true,
+  "description": "Holds the type-check fixtures so they are not inside the citibike package being imported."
+}

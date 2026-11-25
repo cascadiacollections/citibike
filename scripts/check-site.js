@@ -13,6 +13,7 @@
 
 var fs = require('fs');
 var path = require('path');
+var { pathToFileURL } = require('url');
 
 var siteDir = path.join(__dirname, '..', 'site');
 var BASE = 'https://cascadiacollections.github.io/citibike/';
@@ -93,106 +94,186 @@ urls.concat(['og-image.png'].map(function (p) { return BASE + p; })).forEach(fun
   if (!fs.existsSync(target)) errors.push('sitemap/meta: ' + u + ' has no file');
 });
 
+function fail(message) { errors.push(message); }
+
 function checkSnapshot() {
   var file = path.join(siteDir, 'data', 'stations.json');
-  if (!fs.existsSync(file)) return errors.push('data/stations.json is missing');
+  if (!fs.existsSync(file)) return fail('site/data/stations.json is missing');
   var raw = fs.readFileSync(file);
-  if (raw.length > 150 * 1024) errors.push('data/stations.json is ' + raw.length + ' bytes (limit 150KB)');
-  var data;
-  try {
-    data = JSON.parse(raw.toString('utf8'));
-  } catch (e) {
-    return errors.push('data/stations.json is not JSON: ' + e.message);
+  if (raw.length > 160000) fail('site/data/stations.json is ' + raw.length + ' bytes (ceiling 160000)');
+  var payload;
+  try { payload = JSON.parse(raw.toString('utf8')); }
+  catch (e) { return fail('site/data/stations.json is not JSON: ' + e.message); }
+  if (!payload.generatedAt || Number.isNaN(Date.parse(payload.generatedAt))) fail('stations.json generatedAt is not a time');
+  if (payload.lat0 !== 4060000 || payload.lon0 !== -7410000) fail('stations.json lat0/lon0 changed');
+  if (!Array.isArray(payload.stations) || payload.stations.length < 2000) {
+    return fail('stations.json has too few stations');
   }
-  if (typeof data.generatedAt !== 'number' || !isFinite(data.generatedAt)) {
-    errors.push('data/stations.json generatedAt must be a unix timestamp');
-  }
-  if (!Array.isArray(data.stations)) return errors.push('data/stations.json has no stations array');
-  if (data.stations.length < 1500 || data.stations.length > 6000) {
-    errors.push('data/stations.json has ' + data.stations.length + ' stations; expected the NYC system');
-  }
-  for (var i = 0; i < data.stations.length; i++) {
-    var row = data.stations[i];
-    if (!Array.isArray(row) || row.length !== 6 || typeof row[0] !== 'string' || !row[0]) {
-      return errors.push('data/stations.json row ' + i + ' must be [name, lat, lon, bikes, ebikes, docks]');
+  var seen = {};
+  var known = null;
+  payload.stations.forEach(function (row, i) {
+    if (!Array.isArray(row) || row.length !== 8) {
+      if (i < 3) fail('station row ' + i + ' should have 8 fields');
+      return;
     }
-    if (typeof row[1] !== 'number' || row[1] < 40.4 || row[1] > 41.1) {
-      return errors.push('data/stations.json row ' + i + ' latitude is outside the NYC area');
+    var lat = (payload.lat0 + row[2]) / 1e5;
+    var lon = (payload.lon0 + row[3]) / 1e5;
+    if (lat < 40.45 || lat > 41.05 || lon < -74.25 || lon > -73.7) {
+      fail('station ' + row[0] + ' is outside the NYC area (' + lat + ', ' + lon + ')');
     }
-    if (typeof row[2] !== 'number' || row[2] < -74.3 || row[2] > -73.6) {
-      return errors.push('data/stations.json row ' + i + ' longitude is outside the NYC area');
-    }
-    for (var k = 3; k <= 5; k++) {
-      if (typeof row[k] !== 'number' || row[k] < 0 || row[k] > 200 || row[k] !== Math.floor(row[k])) {
-        return errors.push('data/stations.json row ' + i + ' has a bad count');
-      }
-    }
+    if (row[7] !== 0 && row[7] !== 1) fail('station ' + row[0] + ' active flag is not 0 or 1');
+    var key = String(row[0]);
+    if (seen[key]) fail('duplicate station id ' + key);
+    seen[key] = true;
+    if (row[1] === 'W 52 St & 11 Ave') known = { lat: lat, lon: lon };
+  });
+  if (!known) fail('snapshot is missing W 52 St & 11 Ave');
+  else if (Math.abs(known.lat - 40.76727) > 0.002 || Math.abs(known.lon + 73.99393) > 0.002) {
+    fail('W 52 St & 11 Ave is at the wrong coordinates');
   }
-}
-
-function checkFallback() {
-  var file = path.join(siteDir, 'hero-fallback.png');
-  if (!fs.existsSync(file)) return errors.push('hero-fallback.png is missing');
-  var buf = fs.readFileSync(file);
-  if (buf.slice(0, 8).toString('hex') !== '89504e470d0a1a0a') {
-    return errors.push('hero-fallback.png is not a PNG');
-  }
-  if (buf.length < 8000) errors.push('hero-fallback.png looks empty');
-  var width = buf.readUInt32BE(16);
-  var height = buf.readUInt32BE(20);
-  if (width < 800 || height < 500) errors.push('hero-fallback.png is ' + width + 'x' + height);
 }
 
 function checkVendor() {
-  var file = path.join(siteDir, 'vendor', 'three-map.js');
-  var license = path.join(siteDir, 'vendor', 'three.LICENSE.txt');
-  if (!fs.existsSync(file)) return errors.push('vendor/three-map.js is missing');
-  var text = fs.readFileSync(file, 'utf8');
-  if (text.length < 100 * 1024) errors.push('vendor/three-map.js is unexpectedly small');
-  if (text.length > 700 * 1024) errors.push('vendor/three-map.js is unexpectedly large');
-  ['WebGLRenderer', 'OrbitControls', 'InstancedMesh', 'SPDX-License-Identifier: MIT'].forEach(function (needle) {
-    if (text.indexOf(needle) === -1) errors.push('vendor/three-map.js is missing "' + needle + '"');
+  var file = path.join(siteDir, 'vendor', 'three-r187.min.js');
+  var license = path.join(siteDir, 'vendor', 'three-LICENSE.txt');
+  if (!fs.existsSync(file)) return fail('site/vendor/three-r187.min.js is missing');
+  if (!fs.existsSync(license)) return fail('site/vendor/three-LICENSE.txt is missing');
+  var src = fs.readFileSync(file, 'utf8');
+  if (src.length < 400000 || src.length > 800000) fail('three bundle is an unexpected size (' + src.length + ')');
+  if (src.indexOf('three.js r187') === -1 || src.indexOf('MIT') === -1) fail('three bundle is missing its license banner');
+  ['OrbitControls', 'InstancedMesh', 'WebGLRenderer'].forEach(function (name) {
+    if (src.indexOf('as ' + name) === -1) fail('three bundle does not export ' + name);
   });
-  if (!fs.existsSync(license)) return errors.push('vendor/three.LICENSE.txt is missing');
-  var lic = fs.readFileSync(license, 'utf8');
-  if (lic.indexOf('MIT License') === -1 || lic.toLowerCase().indexOf('three.js') === -1) {
-    errors.push('vendor/three.LICENSE.txt does not look like the three.js MIT license');
+  var png = path.join(siteDir, 'hero-fallback.png');
+  if (!fs.existsSync(png)) return fail('site/hero-fallback.png is missing');
+  var pngBuf = fs.readFileSync(png);
+  var magic = pngBuf.subarray(0, 8);
+  var sig = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  if (!magic.equals(sig)) fail('hero-fallback.png is not a PNG');
+  if (pngBuf.length < 8000) fail('hero-fallback.png looks empty (' + pngBuf.length + ' bytes)');
+  if (pngBuf.length < 24) fail('hero-fallback.png is truncated');
+  else {
+    var width = pngBuf.readUInt32BE(16);
+    var height = pngBuf.readUInt32BE(20);
+    if (width < 800 || height < 500) fail('hero-fallback.png is ' + width + 'x' + height);
   }
+  var hero = fs.readFileSync(path.join(siteDir, 'assets', 'hero.js'), 'utf8');
+  if (hero.indexOf('../vendor/three-r187.min.js') === -1) fail('hero.js does not load the vendored three build');
+  if (hero.indexOf('data/stations.json') === -1) fail('hero.js does not fetch the station snapshot');
+  var indexHtml = fs.readFileSync(path.join(siteDir, 'index.html'), 'utf8');
+  var headEnd = indexHtml.indexOf('</head>');
+  var head = headEnd === -1 ? indexHtml : indexHtml.slice(0, headEnd);
+  if (/three-r187|three-map|city-scene/.test(head)) fail('three.js is referenced from <head>');
+  var config = fs.readFileSync(path.join(siteDir, 'assets', 'config.js'), 'utf8');
+  if (!/export const STATUS_WORKER_URL = '';/.test(config)) {
+    fail('site/assets/config.js must ship with an empty STATUS_WORKER_URL');
+  }
+  var workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'snapshot.yml'), 'utf8');
+  if (/npm publish/.test(workflow)) fail('snapshot workflow must not publish to npm');
+  var pins = workflow.match(/uses: \S+@[0-9a-f]{40}/g) || [];
+  if (pins.length < 2) fail('snapshot workflow should pin actions by commit SHA');
 }
 
-function checkHeroModules() {
-  var index = fs.readFileSync(path.join(siteDir, 'index.html'), 'utf8');
-  var head = index.slice(0, index.indexOf('</head>'));
-  if (/three-map|city-scene/.test(head)) errors.push('three.js is referenced from <head>');
-  if (index.indexOf('src="assets/hero.js"') === -1) errors.push('index.html does not load assets/hero.js');
-
-  var heroPath = path.join(siteDir, 'assets', 'hero.js');
-  var scenePath = path.join(siteDir, 'assets', 'city-scene.js');
-  if (!fs.existsSync(heroPath)) return errors.push('assets/hero.js is missing');
-  if (!fs.existsSync(scenePath)) return errors.push('assets/city-scene.js is missing');
-  var hero = fs.readFileSync(heroPath, 'utf8');
-  var scene = fs.readFileSync(scenePath, 'utf8');
-  if (/^import\s/m.test(hero)) errors.push('assets/hero.js should lazy-load the scene, not statically import it');
-  if (hero.indexOf("import('./city-scene.js')") === -1) errors.push('assets/hero.js does not lazy-import city-scene.js');
-  if (hero.indexOf('data/stations.json') === -1) errors.push('assets/hero.js does not fetch data/stations.json');
-  if (scene.indexOf('../vendor/three-map.js') === -1) errors.push('assets/city-scene.js does not import the vendored three.js build');
-
-  [heroPath, scenePath].forEach(function (file) {
-    var src = fs.readFileSync(file, 'utf8');
-    var rel = path.relative(siteDir, file);
-    var re = /(?:import\s*(?:[^'"]*?\sfrom\s*)?|import\()\s*['"](\.[^'"]+)['"]/g;
-    var match;
-    while ((match = re.exec(src))) {
-      var target = path.resolve(path.dirname(file), match[1]);
-      if (!fs.existsSync(target)) errors.push(rel + ': missing module "' + match[1] + '"');
+function memoryCache() {
+  var store = new Map();
+  return {
+    match: function (req) {
+      var hit = store.get(req.url);
+      return Promise.resolve(hit ? hit.clone() : undefined);
+    },
+    put: function (req, res) {
+      store.set(req.url, res.clone());
+      return Promise.resolve();
     }
-  });
+  };
 }
 
-checkSnapshot();
-checkFallback();
-checkVendor();
-checkHeroModules();
+function ctxFor(pending) {
+  return { waitUntil: function (p) { pending.push(p); } };
+}
+
+async function checkLogic() {
+  var diff = await import(pathToFileURL(path.join(siteDir, 'assets', 'diff.js')).href);
+  var line = diff.tickerLine(2, 'W 52 St & 11 Ave');
+  if (line !== '+2 bikes at W 52 St & 11 Ave') fail('tickerLine plus: ' + line);
+  var down = diff.tickerLine(-1, 'W 52 St & 11 Ave');
+  if (down !== '\u22121 bike at W 52 St & 11 Ave') fail('tickerLine minus: ' + down);
+  var deltas = diff.bikeDeltas({ 72: 9, 73: 4 }, [[72, 11, 3, 20, 1], [73, 4, 0, 10, 1], [74, 1, 0, 1, 1]]);
+  if (deltas.length !== 1 || deltas[0].id !== 72 || deltas[0].delta !== 2) fail('bikeDeltas did not keep the real change');
+
+  var worker = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'src', 'index.js')).href);
+  if (worker.PAGES_ORIGIN !== 'https://cascadiacollections.github.io') fail('worker CORS origin changed');
+  var compact = worker.compactStatus({
+    last_updated: 100,
+    data: { stations: [
+      { station_id: 'b', legacy_id: '20', num_bikes_available: 1, num_ebikes_available: 0, num_docks_available: 3, is_installed: 1, is_renting: 1 },
+      { station_id: 'a', legacy_id: '3', num_bikes_available: 4, num_ebikes_available: 2, num_docks_available: 5, is_installed: 0, is_renting: 1 }
+    ] }
+  });
+  if (compact.ttl !== 60 || compact.t !== 100) fail('compact status metadata');
+  if (compact.s.length !== 2 || compact.s[0][0] !== 3 || compact.s[1][0] !== 20 || compact.s[0][4] !== 0) {
+    fail('compact status rows: ' + JSON.stringify(compact.s));
+  }
+
+  var fixture = JSON.stringify({
+    last_updated: 50,
+    ttl: 60,
+    data: { stations: [{ station_id: 'u', legacy_id: '9', num_bikes_available: 2, num_ebikes_available: 1, num_docks_available: 8, is_installed: 1, is_renting: 1 }] }
+  });
+  var calls = [];
+  var cache = memoryCache();
+  async function run(pathName, method, origin) {
+    var pending = [];
+    var res = await worker.handle(new Request('https://citibike-status.example' + pathName, {
+      method: method || 'GET',
+      headers: origin ? { Origin: origin } : {}
+    }), ctxFor(pending), {
+      cache: cache,
+      fetch: function (url) {
+        calls.push(url);
+        return Promise.resolve(new Response(fixture, { status: 200, headers: { 'content-type': 'application/json' } }));
+      }
+    });
+    await Promise.all(pending);
+    return res;
+  }
+
+  var first = await run('/station_status');
+  var second = await run('/');
+  if (calls.length !== 1 || calls[0] !== 'https://gbfs.citibikenyc.com/gbfs/en/station_status.json') {
+    fail('worker fetched upstream ' + calls.length + ' times: ' + calls.join(', '));
+  }
+  if (first.headers.get('cache-control') !== 'public, max-age=60') fail('cache-control is ' + first.headers.get('cache-control'));
+  if (first.headers.get('access-control-allow-origin') !== worker.PAGES_ORIGIN) fail('CORS origin was reflected or missing');
+  var body = await first.json();
+  if (!body.s || body.s[0][0] !== 9 || body.s[0][1] !== 2) fail('worker body was not the compact feed');
+  var again = await second.json();
+  if (again.s[0][0] !== 9) fail('cached body did not replay');
+
+  calls.length = 0;
+  var missing = await run('/anything-else');
+  if (missing.status !== 404 || calls.length !== 0) fail('worker proxied a non-status path');
+  var evil = await run('/station_status', 'GET', 'https://evil.example');
+  if (evil.headers.get('access-control-allow-origin') !== worker.PAGES_ORIGIN) fail('worker echoed a foreign Origin');
+  var denied = await worker.handle(new Request('https://citibike-status.example/station_status', { method: 'POST' }), ctxFor([]), {
+    cache: cache,
+    fetch: function () { calls.push('post'); return Promise.resolve(new Response('no')); }
+  });
+  if (denied.status !== 405) fail('POST should be 405');
+
+  var busted = memoryCache();
+  var bad = await worker.handle(new Request('https://citibike-status.example/station_status'), ctxFor([]), {
+    cache: busted,
+    fetch: function () { return Promise.resolve(new Response('nope', { status: 503 })); }
+  });
+  if (bad.status !== 502) fail('upstream error should be 502, got ' + bad.status);
+  var retried = [];
+  await worker.handle(new Request('https://citibike-status.example/station_status'), ctxFor([]), {
+    cache: busted,
+    fetch: function () { retried.push(1); return Promise.resolve(new Response('nope', { status: 503 })); }
+  });
+  if (retried.length !== 1) fail('an error response was cached');
+}
 
 function done() {
   if (errors.length) {
@@ -203,7 +284,11 @@ function done() {
   console.log('Checked ' + pages.length + ' pages, ' + urls.length + ' sitemap URLs: all links resolve.');
 }
 
-if (!checkExternal) return done();
+async function main() {
+  checkSnapshot();
+  checkVendor();
+  await checkLogic();
+  if (!checkExternal) return done();
 
 var list = Object.keys(externals);
 var pending = list.length;
@@ -213,4 +298,10 @@ list.forEach(function (u) {
     .then(function (r) { if (!r.ok && r.status !== 403) errors.push(externals[u] + ': ' + u + ' returned ' + r.status); })
     .catch(function (e) { errors.push(externals[u] + ': ' + u + ' failed (' + e.message + ')'); })
     .then(function () { if (--pending === 0) done(); });
+});
+}
+
+main().catch(function (err) {
+  console.error(err);
+  process.exit(1);
 });

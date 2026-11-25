@@ -24,6 +24,7 @@
   ],
   "license": "MIT",
   "main": "./lib/citibike.js",
+  "types": "./lib/citibike.d.ts",
   "files": [
     "lib/"
   ],
@@ -31,13 +32,15 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "mocha",
+    "test": "mocha && npm run test:types",
+    "test:types": "node scripts/typecheck.js",
     "docs": "node scripts/build-docs.js",
     "docs:check": "node scripts/check-site.js",
     "snapshot": "node scripts/snapshot-stations.js"
   },
   "devDependencies": {
     "mocha": "^12.0.3",
-    "should": "^13.2.3"
+    "should": "^13.2.3",
+    "typescript": "^7.0.2"
   }
 }

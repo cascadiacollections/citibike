@@ -1,17 +1,19 @@
 name: Refresh station snapshot
 
-# Pulls Citi Bike's public GBFS feeds through this library and rewrites
-# site/data/stations.json and site/hero-fallback.png. Commits only when those
-# files actually change.
+# Pulls a fresh site/data/stations.json through this library and commits it
+# when the station rows actually changed. The fallback PNG stays put: redraw
+# it with scripts/render-fallback.js when the picture should change, so the
+# daily job does not churn a binary. A push made with the default
+# GITHUB_TOKEN does not start other workflows, so a real change on master
+# also dispatches the existing Pages workflow. That is the only deploy this
+# file triggers. It never publishes to npm and never deploys the Worker.
 #
-# A push made with the default GITHUB_TOKEN does not start other workflows, so
-# after a real commit this dispatches the existing "Deploy site and API docs"
-# workflow. That is the only publish step: GitHub Pages, never npm.
+# The cron is offset from the top of the hour and from Scorecard's Monday
+# 06:17 UTC run.
 
 on:
   schedule:
-    # Daily, offset from the top of the hour and from Scorecard's Monday run.
-    - cron: "17 14 * * *"
+    - cron: "17 12 * * *"
   workflow_dispatch:
 
 permissions:
@@ -23,7 +25,7 @@ concurrency:
 
 jobs:
   refresh:
-    name: Refresh station snapshot
+    name: Refresh snapshot and redeploy Pages if it changed
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -36,26 +38,24 @@ jobs:
         with:
           node-version: 24
 
-      - name: Write snapshot
+      - name: Fetch station snapshot
         run: node scripts/snapshot-stations.js
 
       - name: Commit if the snapshot changed
         id: commit
         run: |
-          set -euo pipefail
-          git add site/data/stations.json site/hero-fallback.png
-          if git diff --cached --quiet; then
-            echo "Snapshot unchanged."
+          if git diff --quiet -- site/data/stations.json; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -s -m "data: refresh Citi Bike station snapshot"
+          git add site/data/stations.json
+          git commit -s -m "chore: refresh Citi Bike station snapshot"
           git push origin HEAD
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Dispatch the Pages workflow
+      - name: Redeploy GitHub Pages
         if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/master'
         env:
           GH_TOKEN: ${{ github.token }}

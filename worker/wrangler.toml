@@ -1,0 +1,21 @@
+# Station-status proxy for the citibike docs site.
+# Kevin deploys this by hand (`npx wrangler deploy` from worker/). CI never deploys it.
+# No secrets, no bindings, no routes: it answers on the workers.dev hostname until a custom domain is added.
+
+name = "citibike-status"
+main = "src/index.js"
+compatibility_date = "2026-11-25"
+compatibility_flags = ["nodejs_compat"]
+
+# Logs stay on so a bad deploy is visible, sampled so a busy day of polls
+# does not burn the free 200k log-events/day inclusion. Traces stay sparse.
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 0.1
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 0.01
