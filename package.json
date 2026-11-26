@@ -45,7 +45,9 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "node -e \"console.log('lib/ is hand-written until the TypeScript source lands')\"",
+    "build": "node -e \"require('fs').rmSync('lib', { recursive: true, force: true })\" && tsc -p tsconfig.json",
+    "pretest": "npm run build",
+    "prepack": "npm run build",
     "test": "mocha && npm run test:types",
     "test:types": "node scripts/typecheck.js",
     "coverage": "npm test",

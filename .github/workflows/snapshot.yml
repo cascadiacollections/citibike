@@ -38,6 +38,15 @@ jobs:
         with:
           node-version: 24
 
+      # lib/ is build output, not committed: the script loads the compiled
+      # library, so install the compiler and build it first. Install scripts
+      # stay off because this job holds a write token.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build the library
+        run: npm run build
+
       - name: Fetch station snapshot
         run: node scripts/snapshot-stations.js
 

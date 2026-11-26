@@ -11,6 +11,9 @@
  * back to this repo would make the package contain the tests. Stage the
  * published layout (package.json + lib/) under test/types/node_modules so
  * resolution uses the "types" field the way an installed dependency does.
+ *
+ * lib/ is build output (tsc compiles src/citibike.ts into it), so this needs
+ * `npm run build` first. `npm test` does that in its `pretest` step.
  */
 
 var fs = require('fs');
@@ -32,8 +35,9 @@ if (typeof declared !== 'string' ||
     path.resolve(root, declared) !== path.resolve(root, 'lib', 'citibike.d.ts')) {
   fail('package.json "types" must point at lib/citibike.d.ts');
 }
-if (!fs.existsSync(path.join(root, 'lib', 'citibike.d.ts'))) {
-  fail('Missing lib/citibike.d.ts');
+if (!fs.existsSync(path.join(root, 'lib', 'citibike.d.ts')) ||
+    !fs.existsSync(path.join(root, 'lib', 'citibike.js'))) {
+  fail('Missing lib/citibike.d.ts or lib/citibike.js. Run npm run build first.');
 }
 if (!fs.existsSync(tscJs)) {
   fail('typescript is not installed. Run npm install.');

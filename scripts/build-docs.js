@@ -3,8 +3,13 @@
 
 /*
  * Builds the API reference page (site/api/index.html) from the JSDoc comments
- * in lib/citibike.js. No dependencies. The output is generated on every deploy
+ * in src/citibike.ts. No dependencies. The output is generated on every deploy
  * and never committed (see .gitignore).
+ *
+ * The source is read as text and never compiled, so this runs on a checkout
+ * with no `npm ci` and no `npm run build`, which is how the Pages workflow
+ * runs it. That is also why the blocks it reads spell their types in JSDoc
+ * form (`@param {String} name`) next to the TypeScript signatures.
  *
  * Reads these JSDoc tags: @class, @method, @typedef, @param, @property,
  * @returns, @example, @deprecated, @private, and {@link Name} in text.
@@ -15,7 +20,7 @@ var path = require('path');
 
 var root = path.join(__dirname, '..');
 var pkg = require(path.join(root, 'package.json'));
-var source = fs.readFileSync(path.join(root, 'lib', 'citibike.js'), 'utf8');
+var source = fs.readFileSync(path.join(root, 'src', 'citibike.ts'), 'utf8');
 var outDir = path.join(root, 'site', 'api');
 
 // ---------------------------------------------------------------- parsing
@@ -200,9 +205,9 @@ parseBlocks(source).forEach(function (b) {
   }
 });
 
-if (!parsed.cls) throw new Error('No @class block found in lib/citibike.js');
+if (!parsed.cls) throw new Error('No @class block found in src/citibike.ts');
 // The page lists exactly these, in this order. A public method or typedef in
-// lib/citibike.js that is missing here (or the other way round) fails the build.
+// src/citibike.ts that is missing here (or the other way round) fails the build.
 var promiseOrder = ['stations', 'station', 'nearest', 'feed', 'clearCache'];
 var callbackOrder = ['getStations', 'get', 'getBranches', 'getHelmets'];
 var typeOrder = ['Options', 'RequestOptions', 'Station', 'NearbyStation', 'CitibikeError',
@@ -271,7 +276,7 @@ var html = [
   '    <nav class="toc" aria-label="On this page">' + toc + '</nav>',
   '    <main id="main">',
   '      <h1>API reference</h1>',
-  '      <p class="intro">citibike ' + esc(pkg.version) + '. Generated from the JSDoc comments in <a href="https://github.com/cascadiacollections/citibike/blob/master/lib/citibike.js"><code>lib/citibike.js</code></a>.</p>',
+  '      <p class="intro">citibike ' + esc(pkg.version) + '. Generated from the JSDoc comments in <a href="https://github.com/cascadiacollections/citibike/blob/master/src/citibike.ts"><code>src/citibike.ts</code></a>.</p>',
   '      <p>The promise methods are the 3.x API. They resolve with plain objects and reject with a <a href="#CitibikeError"><code>CitibikeError</code></a> whose <code>code</code> says what went wrong.</p>',
   '      <p>The callback methods keep the 2.x signatures and result shapes, so code written for 2.x keeps working. Each one calls back with a single object. When something goes wrong that object is an <a href="#ErrorResult"><code>ErrorResult</code></a> with <code>ok: false</code>, so check <code>data.ok</code> first. The only things that throw are a missing callback and a null URL passed to <code>get()</code>.</p>',
   '      <section>',
