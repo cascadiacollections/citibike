@@ -201,30 +201,42 @@ parseBlocks(source).forEach(function (b) {
 });
 
 if (!parsed.cls) throw new Error('No @class block found in lib/citibike.js');
-['get', 'getStations', 'getBranches', 'getHelmets'].forEach(function (n) {
-  if (!parsed.methods.some(function (m) { return m.name === n; })) {
-    throw new Error('Missing JSDoc for method ' + n);
-  }
-});
-['Options', 'Station', 'StationsResult', 'ErrorResult'].forEach(function (n) {
-  if (!parsed.typedefs.some(function (t) { return t.name === n; })) {
-    throw new Error('Missing JSDoc @typedef ' + n);
-  }
-});
+// The page lists exactly these, in this order. A public method or typedef in
+// lib/citibike.js that is missing here (or the other way round) fails the build.
+var promiseOrder = ['stations', 'station', 'nearest', 'feed', 'clearCache'];
+var callbackOrder = ['getStations', 'get', 'getBranches', 'getHelmets'];
+var typeOrder = ['Options', 'RequestOptions', 'Station', 'NearbyStation', 'CitibikeError',
+  'StationsResult', 'LegacyStation', 'ErrorResult'];
 
-var order = ['getStations', 'get', 'getBranches', 'getHelmets'];
-var methods = order.map(function (n) {
-  return parsed.methods.filter(function (m) { return m.name === n; })[0];
-});
-var typeOrder = ['Options', 'StationsResult', 'Station', 'ErrorResult'];
-var typedefs = typeOrder.map(function (n) {
-  return parsed.typedefs.filter(function (t) { return t.name === n; })[0];
-});
+function pick(kind, list, names) {
+  return names.map(function (n) {
+    var found = list.filter(function (x) { return x.name === n; })[0];
+    if (!found) throw new Error('Missing JSDoc ' + kind + ' ' + n);
+    return found;
+  });
+}
+
+function undocumented(kind, list, names) {
+  list.forEach(function (x) {
+    if (names.indexOf(x.name) === -1) throw new Error('JSDoc ' + kind + ' ' + x.name + ' is not listed in scripts/build-docs.js');
+  });
+}
+
+var promiseMethods = pick('@method', parsed.methods, promiseOrder);
+var callbackMethods = pick('@method', parsed.methods, callbackOrder);
+var typedefs = pick('@typedef', parsed.typedefs, typeOrder);
+undocumented('@method', parsed.methods, promiseOrder.concat(callbackOrder));
+undocumented('@typedef', parsed.typedefs, typeOrder);
+
+function tocMethods(list) {
+  return '<ul>' + list.map(function (m) {
+    return '<li><a href="#' + m.name + '"><code>' + m.name + '()</code></a></li>';
+  }).join('') + '</ul>';
+}
 
 var toc = '<h2>Client</h2><ul><li><a href="#Citibike">new Citibike()</a></li></ul>' +
-  '<h2>Methods</h2><ul>' + methods.map(function (m) {
-    return '<li><a href="#' + m.name + '"><code>' + m.name + '()</code></a></li>';
-  }).join('') + '</ul>' +
+  '<h2>Promise methods</h2>' + tocMethods(promiseMethods) +
+  '<h2>Callback methods (2.x)</h2>' + tocMethods(callbackMethods) +
   '<h2>Types</h2><ul>' + typedefs.map(function (t) {
     return '<li><a href="#' + t.name + '"><code>' + t.name + '</code></a></li>';
   }).join('') + '</ul>';
@@ -236,7 +248,7 @@ var html = [
   '  <meta charset="UTF-8" />',
   '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
   '  <title>API reference · citibike</title>',
-  '  <meta name="description" content="API reference for citibike ' + esc(pkg.version) + ': the client constructor and its options, getStations, get, and the shape of every result." />',
+  '  <meta name="description" content="API reference for citibike ' + esc(pkg.version) + ': the client constructor and its options, the promise methods, the 2.x-compatible callback methods, and the shape of every result." />',
   '  <link rel="canonical" href="https://cascadiacollections.github.io/citibike/api/" />',
   '  <meta name="color-scheme" content="light dark" />',
   '  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />',
@@ -260,7 +272,8 @@ var html = [
   '    <main id="main">',
   '      <h1>API reference</h1>',
   '      <p class="intro">citibike ' + esc(pkg.version) + '. Generated from the JSDoc comments in <a href="https://github.com/cascadiacollections/citibike/blob/master/lib/citibike.js"><code>lib/citibike.js</code></a>.</p>',
-  '      <p>Every method takes a Node-style callback that receives a single object. When something goes wrong that object is an <a href="#ErrorResult"><code>ErrorResult</code></a> with <code>ok: false</code>, so check <code>data.ok</code> first. The only things that throw are a missing callback and a null URL passed to <code>get()</code>.</p>',
+  '      <p>The promise methods are the 3.x API. They resolve with plain objects and reject with a <a href="#CitibikeError"><code>CitibikeError</code></a> whose <code>code</code> says what went wrong.</p>',
+  '      <p>The callback methods keep the 2.x signatures and result shapes, so code written for 2.x keeps working. Each one calls back with a single object. When something goes wrong that object is an <a href="#ErrorResult"><code>ErrorResult</code></a> with <code>ok: false</code>, so check <code>data.ok</code> first. The only things that throw are a missing callback and a null URL passed to <code>get()</code>.</p>',
   '      <section>',
   '        <h2>Client</h2>',
   '        <div class="entry" id="Citibike">',
@@ -274,8 +287,12 @@ var html = [
   '        </div>',
   '      </section>',
   '      <section>',
-  '        <h2>Methods</h2>',
-  methods.map(renderMethod).join('\n'),
+  '        <h2 id="promise-methods">Promise methods</h2>',
+  promiseMethods.map(renderMethod).join('\n'),
+  '      </section>',
+  '      <section>',
+  '        <h2 id="callback-methods">Callback methods (2.x-compatible)</h2>',
+  callbackMethods.map(renderMethod).join('\n'),
   '      </section>',
   '      <section>',
   '        <h2>Types</h2>',
@@ -294,4 +311,4 @@ var html = [
 
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, 'index.html'), html);
-console.log('Wrote site/api/index.html (' + methods.length + ' methods, ' + typedefs.length + ' types)');
+console.log('Wrote site/api/index.html (' + (promiseMethods.length + callbackMethods.length) + ' methods, ' + typedefs.length + ' types)');

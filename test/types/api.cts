@@ -11,6 +11,7 @@ type Assert<T extends true> = T;
 
 type StationKeys =
   | "id"
+  | "stationId"
   | "status"
   | "availableBikes"
   | "availableEbikes"
@@ -21,25 +22,29 @@ type StationKeys =
   | "latitude"
   | "longitude"
   | "capacity"
-  | "stationAddress";
+  | "stationAddress"
+  | "nearbyStations";
 
-type _stationKeys = Assert<Equal<keyof Citibike.Station, StationKeys>>;
-type _id = Assert<Equal<Citibike.Station["id"], string>>;
-type _status = Assert<Equal<Citibike.Station["status"], "Active" | "Not In Service">>;
-type _bikes = Assert<Equal<Citibike.Station["availableBikes"], number>>;
-type _ebikes = Assert<Equal<Citibike.Station["availableEbikes"], number>>;
-type _docks = Assert<Equal<Citibike.Station["availableDocks"], number>>;
-type _reported = Assert<Equal<Citibike.Station["lastReported"], number>>;
-type _label = Assert<Equal<Citibike.Station["label"], string | undefined>>;
-type _shortName = Assert<Equal<Citibike.Station["shortName"], string | undefined>>;
-type _lat = Assert<Equal<Citibike.Station["latitude"], number | undefined>>;
-type _lon = Assert<Equal<Citibike.Station["longitude"], number | undefined>>;
-type _capacity = Assert<Equal<Citibike.Station["capacity"], number | undefined>>;
-type _address = Assert<Equal<Citibike.Station["stationAddress"], string | undefined>>;
+type _stationKeys = Assert<Equal<keyof Citibike.LegacyStation, StationKeys>>;
+type _id = Assert<Equal<Citibike.LegacyStation["id"], number | string>>;
+type _stationId = Assert<Equal<Citibike.LegacyStation["stationId"], string>>;
+type _nearby = Assert<Equal<Citibike.LegacyStation["nearbyStations"], Citibike.NearbyLegacyStation[] | undefined>>;
+type _nearbyKeys = Assert<Equal<keyof Citibike.NearbyLegacyStation, "id" | "distance">>;
+type _status = Assert<Equal<Citibike.LegacyStation["status"], "Active" | "Not In Service">>;
+type _bikes = Assert<Equal<Citibike.LegacyStation["availableBikes"], number>>;
+type _ebikes = Assert<Equal<Citibike.LegacyStation["availableEbikes"], number>>;
+type _docks = Assert<Equal<Citibike.LegacyStation["availableDocks"], number>>;
+type _reported = Assert<Equal<Citibike.LegacyStation["lastReported"], number>>;
+type _label = Assert<Equal<Citibike.LegacyStation["label"], string | undefined>>;
+type _shortName = Assert<Equal<Citibike.LegacyStation["shortName"], string | undefined>>;
+type _lat = Assert<Equal<Citibike.LegacyStation["latitude"], number | undefined>>;
+type _lon = Assert<Equal<Citibike.LegacyStation["longitude"], number | undefined>>;
+type _capacity = Assert<Equal<Citibike.LegacyStation["capacity"], number | undefined>>;
+type _address = Assert<Equal<Citibike.LegacyStation["stationAddress"], string | undefined>>;
 
 type _ok = Assert<Equal<Citibike.StationsResult["ok"], true>>;
 type _meta = Assert<Equal<Citibike.StationsResult["meta"], never[]>>;
-type _results = Assert<Equal<Citibike.StationsResult["results"], Citibike.Station[]>>;
+type _results = Assert<Equal<Citibike.StationsResult["results"], Citibike.LegacyStation[]>>;
 type _active = Assert<Equal<Citibike.StationsResult["activeStations"], number>>;
 type _total = Assert<Equal<Citibike.StationsResult["totalStations"], number>>;
 type _updated = Assert<Equal<Citibike.StationsResult["lastUpdate"], number>>;
@@ -52,7 +57,40 @@ type _errOk = Assert<Equal<Citibike.ErrorResult["ok"], false>>;
 type _errMeta = Assert<Equal<Citibike.ErrorResult["meta"], never[]>>;
 type _errResults = Assert<Equal<Citibike.ErrorResult["results"], never[]>>;
 type _err = Assert<Equal<Citibike.ErrorResult["error"], string>>;
-type _errKeys = Assert<Equal<keyof Citibike.ErrorResult, "ok" | "meta" | "results" | "error">>;
+type _errCode = Assert<Equal<Citibike.ErrorResult["code"], Citibike.ErrorCode | "EDISCONTINUED" | undefined>>;
+type _errKeys = Assert<Equal<keyof Citibike.ErrorResult, "ok" | "meta" | "results" | "error" | "code">>;
+
+type ModernStationKeys =
+  | "id"
+  | "legacyId"
+  | "name"
+  | "shortName"
+  | "latitude"
+  | "longitude"
+  | "capacity"
+  | "regionId"
+  | "bikesAvailable"
+  | "ebikesAvailable"
+  | "classicBikesAvailable"
+  | "docksAvailable"
+  | "bikesDisabled"
+  | "docksDisabled"
+  | "isInstalled"
+  | "isRenting"
+  | "isReturning"
+  | "lastReported";
+
+type _modernKeys = Assert<Equal<keyof Citibike.Station, ModernStationKeys>>;
+type _modernId = Assert<Equal<Citibike.Station["id"], string>>;
+type _modernLegacyId = Assert<Equal<Citibike.Station["legacyId"], number | null>>;
+type _modernRenting = Assert<Equal<Citibike.Station["isRenting"], boolean>>;
+type _nearbyStationKeys = Assert<Equal<keyof Citibike.NearbyStation, ModernStationKeys | "distance">>;
+type _errorCodes = Assert<Equal<
+  Citibike.ErrorCode,
+  "ETIMEDOUT" | "EABORTED" | "ENETWORK" | "EHTTP" | "EPARSE" | "EPAYLOAD"
+>>;
+type _optCache = Assert<Equal<Citibike.Options["cache"], boolean | undefined>>;
+type _resCache = Assert<Equal<Citibike.ResolvedOptions["cache"], boolean>>;
 
 type _optTimeout = Assert<Equal<Citibike.Options["timeout"], number | undefined>>;
 type _optKey = Assert<Equal<Citibike.Options["apiKey"], string | null | undefined>>;
@@ -89,8 +127,9 @@ export function checkCitibike(Ctor: typeof Citibike): void {
   void apiKey;
   void userAgent;
 
-  const full: Citibike.Station = {
-    id: "66db237e-0aca-11e7-82f6-3863bb44ef7c",
+  const full: Citibike.LegacyStation = {
+    id: 72,
+    stationId: "66db237e-0aca-11e7-82f6-3863bb44ef7c",
     status: "Active",
     availableBikes: 12,
     availableEbikes: 3,
@@ -101,10 +140,12 @@ export function checkCitibike(Ctor: typeof Citibike): void {
     latitude: 40.76727216,
     longitude: -73.99392888,
     capacity: 39,
-    stationAddress: ""
+    stationAddress: "",
+    nearbyStations: [{ id: 480, distance: 0.1778 }]
   };
-  const liveOnly: Citibike.Station = {
-    id: full.id,
+  const liveOnly: Citibike.LegacyStation = {
+    id: full.stationId,
+    stationId: full.stationId,
     status: "Not In Service",
     availableBikes: 0,
     availableEbikes: 0,
@@ -124,7 +165,9 @@ export function checkCitibike(Ctor: typeof Citibike): void {
       }
       const summary: string = data.activeStations + " of " + data.totalStations + " stations active";
       const when: number = data.lastUpdate;
-      const id: string = data.results[0].id;
+      const id: number | string = data.results[0].id;
+      const nearby: Citibike.NearbyLegacyStation[] | undefined = data.results[0].nearbyStations;
+      void nearby;
       const state: "Active" | "Not In Service" = data.results[0].status;
       void summary;
       void when;
@@ -197,10 +240,106 @@ export function checkCitibike(Ctor: typeof Citibike): void {
   client.get(null, () => {});
 
   // @ts-expect-error status is "Active" or "Not In Service"
-  const badStatus: Citibike.Station["status"] = "Closed";
+  const badStatus: Citibike.LegacyStation["status"] = "Closed";
   void badStatus;
 
-  // @ts-expect-error station ids are strings
-  const badId: Citibike.Station["id"] = 66;
+  // @ts-expect-error station ids are numbers or strings
+  const badId: Citibike.LegacyStation["id"] = null;
   void badId;
+
+  checkPromiseApi(Ctor, client);
+}
+
+function checkPromiseApi(Ctor: typeof Citibike, client: Citibike): void {
+  const withCache: Citibike = new Ctor({ cache: false, fetch: fetch });
+  void withCache;
+
+  async function run(): Promise<void> {
+    const stations: Citibike.Station[] = await client.stations();
+    await client.stations({ fresh: true, signal: new AbortController().signal });
+    const name: string = stations[0].name;
+    const legacyId: number | null = stations[0].legacyId;
+    void name;
+    void legacyId;
+
+    const one: Citibike.Station | null = await client.station(72);
+    await client.station("6926.01", { fresh: true });
+    if (one !== null) void one.bikesAvailable;
+
+    const near: Citibike.NearbyStation[] = await client.nearest(
+      { latitude: 40.7527, longitude: -73.9772 },
+      { limit: 3, radius: 800, available: "ebikes" }
+    );
+    await client.nearest({ lat: 40.7527, lon: -73.9772 });
+    const meters: number = near[0].distance;
+    void meters;
+
+    const status = await client.feed("station_status");
+    const bikes: number = status.data.stations[0].num_bikes_available;
+    const information = await client.feed("station_information");
+    const lat: number = information.data.stations[0].lat;
+    const system = await client.feed<{ name: string }>("system_information");
+    const systemName: string = system.data.name;
+    const ttl: number = system.ttl;
+    const raw = await client.feed("system_alerts");
+    const unknownField: unknown = raw.data.alerts;
+    void bikes;
+    void lat;
+    void systemName;
+    void ttl;
+    void unknownField;
+
+    const cleared: Citibike = client.clearCache().clearCache();
+    void cleared;
+
+    try {
+      await client.stations();
+    } catch (error) {
+      if (error instanceof Ctor.CitibikeError) {
+        const code: Citibike.ErrorCode = error.code;
+        const httpStatus: number | null = error.status;
+        const url: string | null = error.url;
+        const message: string = error.message;
+        void code;
+        void httpStatus;
+        void url;
+        void message;
+      }
+    }
+
+    // @ts-expect-error a point needs both coordinates
+    await client.nearest({ latitude: 40.75 });
+
+    // @ts-expect-error unknown availability filter
+    await client.nearest({ latitude: 40.75, longitude: -73.98 }, { available: "scooters" });
+
+    // @ts-expect-error limit is a number
+    await client.nearest({ latitude: 40.75, longitude: -73.98 }, { limit: "5" });
+
+    // @ts-expect-error an id is required
+    await client.station();
+
+    // @ts-expect-error a feed name is required
+    await client.feed();
+
+    // @ts-expect-error fresh is a boolean
+    await client.stations({ fresh: "yes" });
+
+    // @ts-expect-error stations() resolves with an array, not the 2.x envelope
+    void (await client.stations()).results;
+  }
+  void run;
+
+  const meters: number = Ctor.distance({ latitude: 40.75, longitude: -73.98 }, { lat: 40.76, lon: -73.97 });
+  const error: Error = new Ctor.CitibikeError("EHTTP", "HTTP 503", { status: 503, url: "https://example.com" });
+  const named: Citibike = new Ctor.Citibike();
+  void meters;
+  void error;
+  void named;
+
+  // @ts-expect-error unknown error code
+  new Ctor.CitibikeError("ENOPE", "x");
+
+  // @ts-expect-error both points are required
+  Ctor.distance({ latitude: 40.75, longitude: -73.98 });
 }

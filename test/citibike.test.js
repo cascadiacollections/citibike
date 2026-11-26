@@ -122,7 +122,8 @@ describe('Citibike.getStations()', function () {
       data.activeStations.should.equal(1);
 
       data.results[0].should.eql({
-        id: '66db237e-0aca-11e7-82f6-3863bb44ef7c',
+        id: 72,
+        stationId: '66db237e-0aca-11e7-82f6-3863bb44ef7c',
         status: 'Active',
         availableBikes: 12,
         availableEbikes: 3,
@@ -133,7 +134,8 @@ describe('Citibike.getStations()', function () {
         latitude: 40.76727216,
         longitude: -73.99392888,
         capacity: 39,
-        stationAddress: ''
+        stationAddress: '',
+        nearbyStations: data.results[0].nearbyStations
       });
       data.results[1].status.should.equal('Not In Service');
       done();

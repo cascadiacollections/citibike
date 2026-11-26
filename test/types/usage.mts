@@ -27,3 +27,17 @@ bare.get("/system_information.json", (data) => {
 });
 
 checkCitibike(Citibike);
+
+// Named exports, the way an ES module would import them.
+import { Citibike as Named, CitibikeError, distance } from "citibike";
+import type { Station, NearbyStation } from "citibike";
+
+async function promiseApi(): Promise<void> {
+  const stations: Station[] = await new Named().stations();
+  const near: NearbyStation[] = await citibike.nearest({ latitude: 40.75, longitude: -73.98 });
+  const meters: number = distance(stations[0], near[0]);
+  const error: Error = new CitibikeError("EHTTP", "HTTP 503");
+  void meters;
+  void error;
+}
+void promiseApi;
