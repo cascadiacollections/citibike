@@ -114,36 +114,17 @@ jobs:
         with:
           persist-credentials: false
 
-      # Temporary guard: `test:bun` arrives in a separate pull request. Until
-      # it exists the remaining steps are skipped and the job passes. Remove
-      # this step and the `if:` lines below once package.json has the script.
-      - name: Look for the test:bun script
-        id: guard
-        run: |
-          if jq -e '.scripts["test:bun"]' package.json > /dev/null; then
-            echo "package.json has a test:bun script; running it under Bun."
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::package.json has no test:bun script yet; skipping the Bun tests."
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
-
       # npm installs and builds, so Bun tests the same lib/ that gets published.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        if: steps.guard.outputs.present == 'true'
         with:
           node-version: 24.x
           cache: npm
 
       # Keep the version in step with the Bun image in .devcontainer/Dockerfile.
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        if: steps.guard.outputs.present == 'true'
         with:
           bun-version: "1.4.5"
 
-      - if: steps.guard.outputs.present == 'true'
-        run: npm ci
-      - if: steps.guard.outputs.present == 'true'
-        run: npm run build
-      - if: steps.guard.outputs.present == 'true'
-        run: bun run test:bun
+      - run: npm ci
+      # test:bun builds lib/ first, then runs the whole suite with `bun test`.
+      - run: bun run test:bun
