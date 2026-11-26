@@ -284,6 +284,11 @@ citibike.getStations(null, function(data) {
       $ npm run docs          # generate the API reference into site/
       $ npm run docs:check    # check the site's links
 
+  The map on the docs site stays on the daily snapshot until `STATUS_WORKER_URL`
+  in `site/assets/config.js` is set. That constant is the only place the page
+  reads the Worker URL. Deploy steps are in
+  [worker/DEPLOY.md](https://github.com/cascadiacollections/citibike/blob/master/worker/DEPLOY.md).
+
 ## Contributors
 
   * [Brad Dickason](https://github.com/bdickason)
@@ -291,4 +296,4 @@ citibike.getStations(null, function(data) {
 
 ## License
 
-  [MIT](./LICENSE). Copyright (c) 2014-2016 Kevin T. Coughlin.
+  [MIT](./LICENSE). Copyright (c) 2014-2026 Kevin T. Coughlin.

@@ -225,6 +225,40 @@ function checkImages() {
   });
 }
 
+function checkStatusWorker() {
+  var config = fs.readFileSync(path.join(siteDir, 'assets', 'config.js'), 'utf8');
+  var match = config.match(/^export const STATUS_WORKER_URL = '([^']*)';$/m);
+  if (!match) {
+    fail('site/assets/config.js must set STATUS_WORKER_URL to one single-quoted string');
+  } else if (match[1] !== '' && !/^https:\/\/[A-Za-z0-9.-]+\/station_status$/.test(match[1])) {
+    fail('STATUS_WORKER_URL must be empty or an https URL ending in /station_status');
+  }
+
+  // One assignment in the whole site, so deploy is a one-line edit.
+  var assignments = 0;
+  walk(siteDir).forEach(function (file) {
+    if (!/\.js$/.test(file) || file.indexOf(path.sep + 'vendor' + path.sep) !== -1) return;
+    var found = fs.readFileSync(file, 'utf8').match(/STATUS_WORKER_URL\s*=/g);
+    if (found) assignments += found.length;
+  });
+  if (assignments !== 1) {
+    fail('STATUS_WORKER_URL must be assigned once, in site/assets/config.js (found ' + assignments + ')');
+  }
+
+  var hero = fs.readFileSync(path.join(siteDir, 'assets', 'hero.js'), 'utf8');
+  if (hero.indexOf("import { STATUS_WORKER_URL } from './config.js';") === -1) {
+    fail('hero.js must import STATUS_WORKER_URL from config.js');
+  }
+  // startPolling and canPoll both refuse to run while the URL is empty, so
+  // the map stays on the snapshot and does not invent bike changes.
+  if (hero.indexOf('if (!STATUS_WORKER_URL) return;') === -1 || hero.indexOf('!!STATUS_WORKER_URL') === -1) {
+    fail('hero.js must not poll when STATUS_WORKER_URL is empty');
+  }
+  if (hero.indexOf('gbfs.citibikenyc.com') !== -1 || hero.indexOf('workers.dev') !== -1) {
+    fail('hero.js must not hardcode an upstream or Worker URL');
+  }
+}
+
 function checkVendor() {
   var file = path.join(siteDir, 'vendor', 'three-r187.min.js');
   var license = path.join(siteDir, 'vendor', 'three-LICENSE.txt');
@@ -259,10 +293,7 @@ function checkVendor() {
   if (/<script\b(?![^>]*\btype="(?:module|application\/ld\+json)")(?![^>]*\b(?:defer|async)\b)[^>]*>/.test(head)) {
     fail('index.html has a render-blocking script in <head>');
   }
-  var config = fs.readFileSync(path.join(siteDir, 'assets', 'config.js'), 'utf8');
-  if (!/export const STATUS_WORKER_URL = '';/.test(config)) {
-    fail('site/assets/config.js must ship with an empty STATUS_WORKER_URL');
-  }
+  checkStatusWorker();
   var workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'snapshot.yml'), 'utf8');
   if (/npm publish/.test(workflow)) fail('snapshot workflow must not publish to npm');
   var pins = workflow.match(/uses: \S+@[0-9a-f]{40}/g) || [];
