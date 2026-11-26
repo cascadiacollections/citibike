@@ -3,11 +3,12 @@
  * with both the default export and the named exports.
  */
 
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import Citibike, { Citibike as Named, CitibikeError, distance } from 'citibike';
 
-describe('ES module import', function () {
-  it('should expose the default and named exports', function () {
+describe('ES module import', () => {
+  it('should expose the default and named exports', () => {
     assert.equal(typeof Citibike, 'function');
     assert.equal(Named, Citibike);
     assert.ok(new Citibike() instanceof Citibike);
