@@ -1,10 +1,46 @@
 name: CI
 
+# Runs for every change that can affect the library, its tests or its
+# packaging. The path list starts from "everything" and removes what the test
+# suite never reads, so a new top-level file or directory is covered by
+# default and a pull request that touches code always runs.
+#
+# Skipped here on purpose:
+#   site/**, worker/**   checked by pages.yml and not read by any test
+#   **/*.md, LICENSE     prose only
+#   .devcontainer/**     has its own workflow (devcontainer.yml)
+#   .github/**           other workflows and Dependabot config; this file is
+#                        added back so that editing CI still runs CI
+#
+# A workflow skipped by a path filter reports no check at all. That is fine
+# while no status check is required on master. If a required check is ever
+# added, move the filtering into a job so the check still reports.
+#
+# Kept in sync between `push` and `pull_request` by hand; GitHub Actions does
+# not support YAML anchors.
 on:
   push:
-    branches: [ master ]
+    branches: [master]
+    paths:
+      - "**"
+      - "!site/**"
+      - "!worker/**"
+      - "!**/*.md"
+      - "!LICENSE"
+      - "!.devcontainer/**"
+      - "!.github/**"
+      - ".github/workflows/node.js.yml"
   pull_request:
-    branches: [ master ]
+    branches: [master]
+    paths:
+      - "**"
+      - "!site/**"
+      - "!worker/**"
+      - "!**/*.md"
+      - "!LICENSE"
+      - "!.devcontainer/**"
+      - "!.github/**"
+      - ".github/workflows/node.js.yml"
 
 permissions:
   contents: read
@@ -16,20 +52,79 @@ concurrency:
 
 jobs:
   build:
-
+    name: Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [22.x, 24.x]
 
     steps:
-    - uses: actions/checkout@v7
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v7
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: npm run build
-    - run: npm test
-    - run: npm run check:pkg
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+      # Coverage and the package checks do not depend on the Node version, so
+      # they run on one leg only.
+      - name: Coverage
+        if: matrix.node-version == '24.x'
+        run: |
+          set -o pipefail
+          npm run coverage 2>&1 | tee coverage.log
+
+      # Copies the report that `node --test` prints between its "start of
+      # coverage report" and "end of coverage report" lines. Writes nothing if
+      # the output has no such block.
+      - name: Coverage summary
+        if: ${{ !cancelled() && matrix.node-version == '24.x' }}
+        run: |
+          [ -f coverage.log ] || exit 0
+          report="$(sed -n '/start of coverage report/,/end of coverage report/p' coverage.log)"
+          [ -n "$report" ] || exit 0
+          {
+            echo '### Coverage'
+            echo
+            echo '```text'
+            echo "$report"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check the package (publint, arethetypeswrong)
+        if: matrix.node-version == '24.x'
+        run: npm run check:pkg
+
+  bun:
+    name: Bun
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # npm installs and builds, so Bun tests the same lib/ that gets published.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.x
+          cache: npm
+
+      # Keep the version in step with the Bun image in .devcontainer/Dockerfile.
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: "1.4.5"
+
+      - run: npm ci
+      # test:bun builds lib/ first, then runs the whole suite with `bun test`.
+      - run: bun run test:bun

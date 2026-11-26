@@ -1,0 +1,34 @@
+// Dev container for citibike: Node 24 on Debian stable, plus Bun and the
+// GitHub CLI. Works with VS Code Dev Containers, the devcontainer CLI and
+// GitHub Codespaces. The image and Bun are pinned in ./Dockerfile; the feature
+// below is pinned by digest in ./devcontainer-lock.json.
+{
+  "name": "citibike",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  // Non-root user that ships with the base image.
+  "remoteUser": "node",
+  "postCreateCommand": "npm ci && npm run build",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // The base image recommends ESLint, which this repo does not use.
+        "-dbaeumer.vscode-eslint"
+      ],
+      "settings": {
+        // TypeScript support is built into VS Code. There is no
+        // `typescript.tsdk` override because TypeScript 7 in node_modules
+        // ships no tsserver.js for the editor to load; `npm test` is the
+        // authoritative type check.
+        "typescript.updateImportsOnFileMove.enabled": "always",
+        // lib/ uses 4 spaces, tests and scripts use 2: follow each file.
+        "editor.detectIndentation": true,
+        "files.insertFinalNewline": true
+      }
+    }
+  }
+}
