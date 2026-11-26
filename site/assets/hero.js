@@ -16,8 +16,10 @@ var freshness = document.getElementById('freshness');
 var ticker = document.getElementById('ticker');
 var copyBtn = document.getElementById('copy-install');
 var copyState = document.getElementById('copy-state');
+var copyLive = document.getElementById('copy-live');
 var zoomBox = document.getElementById('zoom');
 var tip = document.getElementById('station-tip');
+var fallbackAlt = fallback.alt;
 
 var motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 var themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -31,9 +33,48 @@ var sceneReady = false;
 var reduced = function () { return motionQuery.matches; };
 
 bindCopy();
+// Let the first paint happen, then fetch the snapshot once the hero is on
+// screen. A visit that lands further down the page (index.html#example) costs
+// neither the station data nor three.js until the reader scrolls up to the map.
 requestAnimationFrame(function () {
-  requestAnimationFrame(loadSnapshot);
+  requestAnimationFrame(function () { whenHeroVisible(loadSnapshot); });
 });
+
+function whenHeroVisible(run) {
+  if (!window.IntersectionObserver) return run();
+  // With scroll-behavior: smooth, a load that targets a section below the
+  // hero starts at the top and scrolls away, so the hero is on screen for a
+  // moment. Only then, ask for it to stay put before counting it as visible.
+  var dwell = linksBelowHero() ? 1000 : 0;
+  var timer = 0;
+  var watcher = new IntersectionObserver(function (entries) {
+    clearTimeout(timer);
+    if (!entries[entries.length - 1].isIntersecting) return;
+    timer = setTimeout(function () {
+      watcher.disconnect();
+      run();
+    }, dwell);
+  });
+  watcher.observe(hero);
+}
+
+function linksBelowHero() {
+  var target = null;
+  try {
+    target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+  } catch (err) {
+    return false;
+  }
+  return !!target && !hero.contains(target);
+}
+
+// The button's accessible name is fixed by its aria-label, so the visible
+// "Copied" never reaches a screen reader. Say it in a status region instead.
+function announce(text) {
+  if (!copyLive) return;
+  copyLive.textContent = text;
+  setTimeout(function () { copyLive.textContent = ''; }, 2500);
+}
 
 function bindCopy() {
   if (!copyBtn) return;
@@ -41,9 +82,11 @@ function bindCopy() {
     noteInteraction();
     writeClipboard(INSTALL).then(function () {
       copyState.textContent = 'Copied';
+      announce('Copied');
       setTimeout(function () { copyState.textContent = 'Copy'; }, 2000);
     }).catch(function () {
       copyState.textContent = 'Copy the command above';
+      announce('Copy failed. Select the command and copy it by hand.');
       setTimeout(function () { copyState.textContent = 'Copy'; }, 2500);
     });
   });
@@ -129,7 +172,8 @@ function loadSnapshot() {
       mode = saveDataOn() ? 'saver' : 'snapshot';
       paintStats();
       renderFreshness();
-      if (hasWebGL()) scheduleScene();
+      // Save-Data keeps the static image: the scene costs a 560 KB module.
+      if (hasWebGL() && !saveDataOn()) scheduleScene();
       else markStatic();
       startPolling();
     })
@@ -518,6 +562,9 @@ function buildScene(three) {
   canvas.addEventListener('pointerleave', function () {
     if (!pinned) hideTip();
   });
+  window.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !tip.hidden) hideTip();
+  });
 
   document.getElementById('zoom-in').addEventListener('click', function () {
     noteInteraction();
@@ -565,7 +612,11 @@ function buildScene(three) {
     hero.classList.remove('is-live');
     hero.classList.add('no-webgl');
     zoomBox.hidden = true;
-    fallback.hidden = false;
+    hideTip();
+    canvas.removeAttribute('role');
+    canvas.removeAttribute('aria-label');
+    canvas.setAttribute('aria-hidden', 'true');
+    fallback.alt = fallbackAlt;
   });
 
   var observer = new IntersectionObserver(function (entries) {

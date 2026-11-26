@@ -133,6 +133,98 @@ function checkSnapshot() {
   }
 }
 
+var PNG_SIG = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+
+// Returns { width, height } for a PNG in site/, or null after reporting why not.
+function pngSize(rel, minBytes) {
+  var file = path.join(siteDir, rel);
+  if (!fs.existsSync(file)) { fail('site/' + rel + ' is missing'); return null; }
+  var buf = fs.readFileSync(file);
+  if (buf.length < 24 || !buf.subarray(0, 8).equals(PNG_SIG)) { fail(rel + ' is not a PNG'); return null; }
+  if (buf.length < minBytes) fail(rel + ' looks empty (' + buf.length + ' bytes)');
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+}
+
+// Same for a WebP. Reads the canvas size from a lossless (VP8L), lossy (VP8)
+// or extended (VP8X) header.
+function webpSize(rel, minBytes) {
+  var file = path.join(siteDir, rel);
+  if (!fs.existsSync(file)) { fail('site/' + rel + ' is missing'); return null; }
+  var buf = fs.readFileSync(file);
+  if (buf.length < 30 || buf.toString('latin1', 0, 4) !== 'RIFF' || buf.toString('latin1', 8, 12) !== 'WEBP') {
+    fail(rel + ' is not a WebP');
+    return null;
+  }
+  if (buf.length < minBytes) fail(rel + ' looks empty (' + buf.length + ' bytes)');
+  var kind = buf.toString('latin1', 12, 16);
+  if (kind === 'VP8L' && buf[20] === 0x2f) {
+    var bits = buf.readUInt32LE(21);
+    return { width: (bits & 0x3fff) + 1, height: ((bits >>> 14) & 0x3fff) + 1 };
+  }
+  if (kind === 'VP8X') return { width: buf.readUIntLE(24, 3) + 1, height: buf.readUIntLE(27, 3) + 1 };
+  if (kind === 'VP8 ') return { width: buf.readUInt16LE(26) & 0x3fff, height: buf.readUInt16LE(28) & 0x3fff };
+  fail(rel + ' has an unknown WebP header (' + kind + ')');
+  return null;
+}
+
+function attr(tag, name) {
+  var m = new RegExp('\\s' + name + '="([^"]*)"').exec(tag || '');
+  return m ? m[1] : null;
+}
+
+// The raster images are committed, not built (see scripts/render-fallback.js),
+// so check that each one exists, is what its extension says, has the size the
+// markup declares, and is still referenced.
+function checkImages() {
+  var indexHtml = fs.readFileSync(path.join(siteDir, 'index.html'), 'utf8');
+
+  var png = pngSize('hero-fallback.png', 8000);
+  var webp = webpSize('hero-fallback.webp', 8000);
+  if (png && (png.width < 800 || png.height < 500)) fail('hero-fallback.png is ' + png.width + 'x' + png.height);
+  if (png && webp && (png.width !== webp.width || png.height !== webp.height)) {
+    fail('hero-fallback.webp is ' + webp.width + 'x' + webp.height + ' but the PNG is ' + png.width + 'x' + png.height + '; rerun scripts/render-fallback.js');
+  }
+  if (fs.existsSync(path.join(siteDir, 'hero-fallback.webp')) && fs.existsSync(path.join(siteDir, 'hero-fallback.png')) &&
+      fs.statSync(path.join(siteDir, 'hero-fallback.webp')).size >= fs.statSync(path.join(siteDir, 'hero-fallback.png')).size) {
+    fail('hero-fallback.webp is not smaller than the PNG it replaces');
+  }
+  var picture = /<picture>([\s\S]*?)<\/picture>/.exec(indexHtml);
+  var source = picture && /<source\b[^>]*>/.exec(picture[1]);
+  var img = picture && /<img\b[^>]*>/.exec(picture[1]);
+  if (!source || attr(source[0], 'srcset') !== 'hero-fallback.webp' || attr(source[0], 'type') !== 'image/webp') {
+    fail('index.html should offer hero-fallback.webp in a <picture> <source type="image/webp">');
+  }
+  if (!img || attr(img[0], 'src') !== 'hero-fallback.png') {
+    fail('index.html should keep hero-fallback.png as the <img> fallback inside <picture>');
+  } else if (png && (attr(img[0], 'width') !== String(png.width) || attr(img[0], 'height') !== String(png.height))) {
+    fail('the hero <img> width/height do not match hero-fallback.png (' + png.width + 'x' + png.height + ')');
+  } else if (/\sloading="lazy"/.test(img[0])) {
+    fail('the hero <img> is above the fold and must not be lazy-loaded');
+  }
+
+  var og = pngSize('og-image.png', 8000);
+  var ogW = /property="og:image:width" content="(\d+)"/.exec(indexHtml);
+  var ogH = /property="og:image:height" content="(\d+)"/.exec(indexHtml);
+  if (og && (og.width !== 1200 || og.height !== 630)) fail('og-image.png is ' + og.width + 'x' + og.height + ', expected 1200x630');
+  if (og && (!ogW || !ogH || +ogW[1] !== og.width || +ogH[1] !== og.height)) fail('og:image:width/height do not match og-image.png');
+  if (!/property="og:image:alt" content="[^"]+"/.test(indexHtml)) fail('og:image:alt is missing');
+
+  [['assets/favicon-32.png', 32, /<link rel="icon" href="assets\/favicon-32\.png" sizes="32x32"/],
+   ['assets/apple-touch-icon.png', 180, /<link rel="apple-touch-icon" href="assets\/apple-touch-icon\.png"/]].forEach(function (icon) {
+    var size = pngSize(icon[0], 200);
+    if (size && (size.width !== icon[1] || size.height !== icon[1])) {
+      fail(icon[0] + ' is ' + size.width + 'x' + size.height + ', expected ' + icon[1] + 'x' + icon[1]);
+    }
+    if (!icon[2].test(indexHtml)) fail('index.html does not link ' + icon[0]);
+  });
+  if (!fs.existsSync(path.join(siteDir, 'assets', 'favicon.svg'))) fail('site/assets/favicon.svg is missing');
+  ['light', 'dark'].forEach(function (scheme) {
+    if (!new RegExp('<meta name="theme-color" content="#[0-9a-f]{6}" media="\\(prefers-color-scheme: ' + scheme + '\\)"').test(indexHtml)) {
+      fail('index.html has no theme-color for the ' + scheme + ' scheme');
+    }
+  });
+}
+
 function checkVendor() {
   var file = path.join(siteDir, 'vendor', 'three-r187.min.js');
   var license = path.join(siteDir, 'vendor', 'three-LICENSE.txt');
@@ -144,19 +236,6 @@ function checkVendor() {
   ['OrbitControls', 'InstancedMesh', 'WebGLRenderer'].forEach(function (name) {
     if (src.indexOf('as ' + name) === -1) fail('three bundle does not export ' + name);
   });
-  var png = path.join(siteDir, 'hero-fallback.png');
-  if (!fs.existsSync(png)) return fail('site/hero-fallback.png is missing');
-  var pngBuf = fs.readFileSync(png);
-  var magic = pngBuf.subarray(0, 8);
-  var sig = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-  if (!magic.equals(sig)) fail('hero-fallback.png is not a PNG');
-  if (pngBuf.length < 8000) fail('hero-fallback.png looks empty (' + pngBuf.length + ' bytes)');
-  if (pngBuf.length < 24) fail('hero-fallback.png is truncated');
-  else {
-    var width = pngBuf.readUInt32BE(16);
-    var height = pngBuf.readUInt32BE(20);
-    if (width < 800 || height < 500) fail('hero-fallback.png is ' + width + 'x' + height);
-  }
   var hero = fs.readFileSync(path.join(siteDir, 'assets', 'hero.js'), 'utf8');
   if (hero.indexOf('../vendor/three-r187.min.js') === -1) fail('hero.js does not load the vendored three build');
   if (hero.indexOf('data/stations.json') === -1) fail('hero.js does not fetch the station snapshot');
@@ -164,6 +243,22 @@ function checkVendor() {
   var headEnd = indexHtml.indexOf('</head>');
   var head = headEnd === -1 ? indexHtml : indexHtml.slice(0, headEnd);
   if (/three-r187|three-map|city-scene/.test(head)) fail('three.js is referenced from <head>');
+  // hero.js and its static imports are modulepreloaded so they arrive together.
+  // Keep that list exact: a missing entry costs a round trip, a stale one a wasted fetch.
+  var imported = ['hero.js'].concat((hero.match(/^import [^;]*? from '\.\/[^']+';/gm) || []).map(function (line) {
+    return /'\.\/([^']+)'/.exec(line)[1];
+  })).sort();
+  var preloaded = (head.match(/<link rel="modulepreload" href="assets\/[^"]+"/g) || []).map(function (tag) {
+    return /assets\/([^"]+)/.exec(tag)[1];
+  }).sort();
+  if (imported.join(' ') !== preloaded.join(' ')) {
+    fail('modulepreload links (' + preloaded.join(', ') + ') do not match hero.js and its imports (' + imported.join(', ') + ')');
+  }
+  // The snapshot is fetched by hero.js after first paint, and only once the hero is on screen.
+  if (/stations\.json/.test(head)) fail('the station snapshot is referenced from <head>');
+  if (/<script\b(?![^>]*\btype="(?:module|application\/ld\+json)")(?![^>]*\b(?:defer|async)\b)[^>]*>/.test(head)) {
+    fail('index.html has a render-blocking script in <head>');
+  }
   var config = fs.readFileSync(path.join(siteDir, 'assets', 'config.js'), 'utf8');
   if (!/export const STATUS_WORKER_URL = '';/.test(config)) {
     fail('site/assets/config.js must ship with an empty STATUS_WORKER_URL');
@@ -287,6 +382,7 @@ function done() {
 async function main() {
   checkSnapshot();
   checkVendor();
+  checkImages();
   await checkLogic();
   if (!checkExternal) return done();
 

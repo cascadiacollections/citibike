@@ -26,8 +26,18 @@
   <meta name="twitter:description" content="Live bike, e-bike and dock counts for every Citi Bike station. No runtime dependencies." />
   <meta name="twitter:image" content="https://cascadiacollections.github.io/citibike/og-image.png" />
 
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <link rel="stylesheet" href="assets/site.css" />
+  <!-- hero.js and the four small modules it imports, fetched together instead
+       of one round trip apart. The station data and three.js are deliberately
+       not preloaded: hero.js asks for them after first paint. -->
+  <link rel="modulepreload" href="assets/hero.js" />
+  <link rel="modulepreload" href="assets/config.js" />
+  <link rel="modulepreload" href="assets/project.js" />
+  <link rel="modulepreload" href="assets/stations.js" />
+  <link rel="modulepreload" href="assets/diff.js" />
 
   <script type="application/ld+json">
   {
@@ -62,7 +72,10 @@
 
   <main id="main">
     <section class="hero-scene" aria-label="Map of Citi Bike stations across New York City">
-      <img id="hero-fallback" class="hero-fallback" src="hero-fallback.png" alt="Map of Citi Bike stations across Manhattan, Brooklyn, Queens, the Bronx and Jersey City" width="840" height="1140" />
+      <picture>
+        <source srcset="hero-fallback.webp" type="image/webp" />
+        <img id="hero-fallback" class="hero-fallback" src="hero-fallback.png" alt="Map of Citi Bike stations across Manhattan, Brooklyn, Queens, the Bronx and Jersey City" width="840" height="1140" decoding="async" fetchpriority="high" />
+      </picture>
       <canvas id="city" aria-hidden="true"></canvas>
       <div class="hero-scrim"></div>
       <div class="hero-copy wrap">
@@ -74,6 +87,7 @@
             <span class="cmd">npm install citibike</span>
             <span class="copy-state" id="copy-state">Copy</span>
           </button>
+          <span class="visually-hidden" id="copy-live" role="status"></span>
           <a class="btn" href="https://github.com/cascadiacollections/citibike">GitHub</a>
           <a class="btn" href="api/">API docs</a>
         </div>
@@ -90,7 +104,7 @@
         <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
         <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
       </div>
-      <div class="station-tip" id="station-tip" role="tooltip" hidden></div>
+      <div class="station-tip" id="station-tip" hidden></div>
     </section>
 
     <section>
