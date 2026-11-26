@@ -7,7 +7,10 @@
 
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import worker, { handle, compactStatus, PAGES_ORIGIN, UPSTREAM } from '../worker/src/index.js';
+import worker, { handle, compactStatus } from '../worker/src/index.js';
+
+const PAGES_ORIGIN = 'https://cascadiacollections.github.io';
+const UPSTREAM = 'https://gbfs.lyft.com/gbfs/1.1/bkn/en/station_status.json';
 const HOST = 'https://citibike-status.example';
 
 const FEED = {
@@ -446,6 +449,40 @@ describe('the Worker entry point', () => {
     assert.deepEqual(await second.json(), COMPACT);
     assert.equal(fetched.mock.callCount(), 1);
     assert.equal(fetched.mock.calls[0].arguments[0], UPSTREAM);
+    assert.equal(cache.store.size, 1);
+  });
+
+  it('should call the runtime fetch as a function, not as a method', async (t) => {
+    const cache = memoryCache();
+    const previousFetch = globalThis.fetch;
+    const previousCaches = globalThis.caches;
+    let receiver = 'unset';
+    t.mock.method(console, 'log', () => {});
+    globalThis.caches = { default: cache };
+    // Workers fetch throws Illegal invocation when `this` is the deps object.
+    // Node's fetch does not, so the fake has to.
+    globalThis.fetch = function (input) {
+      receiver = this;
+      if (this != null && this !== globalThis) {
+        throw new TypeError('Illegal invocation: function called with incorrect `this` reference.');
+      }
+      assert.equal(input, UPSTREAM);
+      return Promise.resolve(new Response(JSON.stringify(FEED)));
+    };
+    t.after(() => {
+      globalThis.fetch = previousFetch;
+      if (previousCaches === undefined) delete globalThis.caches;
+      else globalThis.caches = previousCaches;
+    });
+
+    const pending = [];
+    const response = await worker.fetch(new Request(HOST + '/station_status'), {}, {
+      waitUntil: (p) => pending.push(p)
+    });
+    await Promise.all(pending);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), COMPACT);
+    assert.ok(receiver == null || receiver === globalThis);
     assert.equal(cache.store.size, 1);
   });
 });

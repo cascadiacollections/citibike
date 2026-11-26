@@ -10,13 +10,12 @@
  * No secrets. No other upstream hosts. No second try on failure.
  */
 
-// gbfs.citibikenyc.com is CloudFront with AAAA records that refuse port 443.
-// Workers use those addresses and fetch() throws, which is the live 502
-// "upstream unavailable". gbfs.lyft.com is the same feed, IPv4 only.
-// The 1.1 document still has legacy_id on every station. The 2.3 document
-// does not, and the map matches stations by that id.
-export const UPSTREAM = 'https://gbfs.lyft.com/gbfs/1.1/bkn/en/station_status.json';
-export const PAGES_ORIGIN = 'https://cascadiacollections.github.io';
+// GBFS 1.1. The 2.3 station_status file drops legacy_id, which is the id
+// the map matches. One host, no fallback fetch.
+// Not exported. A string export on the Worker entry is not a handler, and
+// workerd refuses to start.
+const UPSTREAM = 'https://gbfs.lyft.com/gbfs/1.1/bkn/en/station_status.json';
+const PAGES_ORIGIN = 'https://cascadiacollections.github.io';
 const MAX_BODY = 5 * 1024 * 1024;
 const TTL = 60;
 
@@ -185,6 +184,11 @@ export async function handle(request, ctx, deps) {
 
 export default {
   async fetch(request, env, ctx) {
-    return handle(request, ctx, { cache: caches.default, fetch: fetch });
+    // deps.fetch() would set `this` to deps. Workers fetch then throws
+    // TypeError: Illegal invocation. Call it as a function.
+    return handle(request, ctx, {
+      cache: caches.default,
+      fetch: (input, init) => fetch(input, init)
+    });
   }
 };

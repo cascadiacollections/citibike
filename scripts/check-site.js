@@ -331,7 +331,6 @@ async function checkLogic() {
   if (deltas.length !== 1 || deltas[0].id !== 72 || deltas[0].delta !== 2) fail('bikeDeltas did not keep the real change');
 
   var worker = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'src', 'index.js')).href);
-  if (worker.PAGES_ORIGIN !== 'https://cascadiacollections.github.io') fail('worker CORS origin changed');
   var compact = worker.compactStatus({
     last_updated: 100,
     data: { stations: [
@@ -372,11 +371,8 @@ async function checkLogic() {
   if (calls.length !== 1 || calls[0] !== 'https://gbfs.lyft.com/gbfs/1.1/bkn/en/station_status.json') {
     fail('worker fetched upstream ' + calls.length + ' times: ' + calls.join(', '));
   }
-  if (worker.UPSTREAM !== 'https://gbfs.lyft.com/gbfs/1.1/bkn/en/station_status.json') {
-    fail('worker upstream must stay on the IPv4-only Lyft feed');
-  }
   if (first.headers.get('cache-control') !== 'public, max-age=60') fail('cache-control is ' + first.headers.get('cache-control'));
-  if (first.headers.get('access-control-allow-origin') !== worker.PAGES_ORIGIN) fail('CORS origin was reflected or missing');
+  if (first.headers.get('access-control-allow-origin') !== 'https://cascadiacollections.github.io') fail('CORS origin was reflected or missing');
   var body = await first.json();
   if (!body.s || body.s[0][0] !== 9 || body.s[0][1] !== 2) fail('worker body was not the compact feed');
   var again = await second.json();
@@ -386,7 +382,7 @@ async function checkLogic() {
   var missing = await run('/anything-else');
   if (missing.status !== 404 || calls.length !== 0) fail('worker proxied a non-status path');
   var evil = await run('/station_status', 'GET', 'https://evil.example');
-  if (evil.headers.get('access-control-allow-origin') !== worker.PAGES_ORIGIN) fail('worker echoed a foreign Origin');
+  if (evil.headers.get('access-control-allow-origin') !== 'https://cascadiacollections.github.io') fail('worker echoed a foreign Origin');
   var denied = await worker.handle(new Request('https://citibike-status.example/station_status', { method: 'POST' }), ctxFor([]), {
     cache: cache,
     fetch: function () { calls.push('post'); return Promise.resolve(new Response('no')); }
