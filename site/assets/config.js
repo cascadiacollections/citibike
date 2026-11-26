@@ -1,4 +1,7 @@
-// URL of the station_status Worker (see worker/README.md).
-// Leave this empty until that Worker is deployed. An empty value, or a
-// Worker that fails, keeps the page on the committed snapshot.
+// Live station counts for the map. This is the only line to change after
+// the Worker deploy. See worker/DEPLOY.md.
+//
+// Leave the string empty until then. An empty value keeps the page on the
+// committed snapshot: no poll, and no pretend live activity. A Worker that
+// fails does the same.
 export const STATUS_WORKER_URL = '';

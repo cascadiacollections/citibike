@@ -6,11 +6,16 @@ name: CI
 # default and a pull request that touches code always runs.
 #
 # Skipped here on purpose:
-#   site/**, worker/**   checked by pages.yml and not read by any test
-#   **/*.md, LICENSE     prose only
-#   .devcontainer/**     has its own workflow (devcontainer.yml)
-#   .github/**           other workflows and Dependabot config; this file is
-#                        added back so that editing CI still runs CI
+#   site/**          Pages (pages.yml) runs the site checker. npm test also
+#                    reads the site, but a site-only change should not pay
+#                    for this matrix.
+#   **/*.md, LICENSE prose only
+#   .devcontainer/** has its own workflow (devcontainer.yml)
+#   .github/**       other workflows and Dependabot config; this file is
+#                    added back so that editing CI still runs CI
+#
+# worker/** stays included. test/worker.test.mjs and scripts/check-site.js
+# read worker/src, and pages.yml does not list that directory.
 #
 # A workflow skipped by a path filter reports no check at all. That is fine
 # while no status check is required on master. If a required check is ever
@@ -24,7 +29,6 @@ on:
     paths:
       - "**"
       - "!site/**"
-      - "!worker/**"
       - "!**/*.md"
       - "!LICENSE"
       - "!.devcontainer/**"
@@ -35,7 +39,6 @@ on:
     paths:
       - "**"
       - "!site/**"
-      - "!worker/**"
       - "!**/*.md"
       - "!LICENSE"
       - "!.devcontainer/**"

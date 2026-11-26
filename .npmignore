@@ -1,3 +1,23 @@
-node_modules
+# npm uses this file instead of .gitignore when it packs.
+# package.json "files" is the allowlist and already limits the tarball to
+# lib/. These rules are the backstop: do not copy the /lib/ line from
+# .gitignore into here, or the published declarations get dropped. Do not
+# add a broad pattern such as s*.js; it can exclude a file under lib/.
+
+node_modules/
+coverage/
+.nyc_output/
+.wrangler/
+.github/
+.devcontainer/
+test/
+examples/
+scripts/
+src/
+site/
+worker/
+*.tgz
+*.log
+*.tsbuildinfo
+.DS_Store
 .*.swp
-s*.js

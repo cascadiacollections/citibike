@@ -30,15 +30,4 @@ Parsing the ~1 MB status feed is the only heavy step, and it runs on cache miss.
 
 ## Deploy
 
-This is not deployed by GitHub Actions, and it is not published to npm.
-
-```bash
-cd worker
-npx wrangler deploy
-```
-
-Then set `STATUS_WORKER_URL` in `site/assets/config.js` to the workers.dev URL (or a custom domain), path `/station_status`, and redeploy the GitHub Pages site.
-
-```js
-export const STATUS_WORKER_URL = 'https://citibike-status.<account>.workers.dev/station_status';
-```
+This is not deployed by GitHub Actions, and it is not published to npm. The exact steps (`npx wrangler login`, `npx wrangler deploy`, the curl check, and the one line in `site/assets/config.js`) are in [DEPLOY.md](./DEPLOY.md).
