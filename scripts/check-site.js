@@ -254,8 +254,11 @@ function checkStatusWorker() {
   if (hero.indexOf('if (!STATUS_WORKER_URL) return;') === -1 || hero.indexOf('!!STATUS_WORKER_URL') === -1) {
     fail('hero.js must not poll when STATUS_WORKER_URL is empty');
   }
-  if (hero.indexOf('gbfs.citibikenyc.com') !== -1 || hero.indexOf('workers.dev') !== -1) {
-    fail('hero.js must not hardcode an upstream or Worker URL');
+  // Two fetches: the snapshot file, and the Worker URL from config.js.
+  // A third fetch would be a hardcoded live feed.
+  var fetches = hero.match(/\bfetch\s*\(/g) || [];
+  if (fetches.length !== 2 || hero.indexOf("fetch('data/stations.json'") === -1 || hero.indexOf('fetch(STATUS_WORKER_URL') === -1) {
+    fail('hero.js must fetch only the station snapshot and STATUS_WORKER_URL');
   }
 }
 
