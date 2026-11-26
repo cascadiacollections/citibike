@@ -1,7 +1,7 @@
 name: Deploy site and API docs
 
 # Publishes the static site in `site/` plus the API reference, which
-# `npm run docs` generates from the JSDoc comments in lib/citibike.js, to
+# `npm run docs` generates from the JSDoc comments in src/citibike.ts, to
 # GitHub Pages. The landing page is plain HTML with no build step. The API
 # reference is built fresh on every run and never committed.
 #
@@ -13,7 +13,7 @@ on:
     # does not support YAML anchors.
     paths:
       - "site/**"
-      - "lib/**"
+      - "src/**"
       - "scripts/**"
       - "package.json"
       - ".github/workflows/pages.yml"
@@ -22,7 +22,7 @@ on:
   pull_request:
     paths:
       - "site/**"
-      - "lib/**"
+      - "src/**"
       - "scripts/**"
       - "package.json"
       - ".github/workflows/pages.yml"

@@ -71,6 +71,8 @@ The callback methods keep their 2.x signatures, and `getStations()` keeps its
    `{ ok: false, error: 'Connection closed before response ... finished' }`.
  * Responses are requested with compression, which `fetch` handles itself.
  * Tests run against a local HTTP server with GBFS-shaped fixtures; no network access.
+ * The source is now TypeScript (`src/citibike.ts`); `npm run build` compiles it to the
+   `lib/citibike.js` and `lib/citibike.d.ts` the package ships. `lib/` is no longer committed.
  * CI runs on Node 22.x and 24.x with current `actions/checkout` and `actions/setup-node`,
    and type-checks the bundled declarations; mocha pinned to `^12`, should to `^13`;
    supertest removed.
