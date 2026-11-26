@@ -369,8 +369,11 @@ async function checkLogic() {
 
   var first = await run('/station_status');
   var second = await run('/');
-  if (calls.length !== 1 || calls[0] !== 'https://gbfs.citibikenyc.com/gbfs/en/station_status.json') {
+  if (calls.length !== 1 || calls[0] !== 'https://gbfs.lyft.com/gbfs/1.1/bkn/en/station_status.json') {
     fail('worker fetched upstream ' + calls.length + ' times: ' + calls.join(', '));
+  }
+  if (worker.UPSTREAM !== 'https://gbfs.lyft.com/gbfs/1.1/bkn/en/station_status.json') {
+    fail('worker upstream must stay on the IPv4-only Lyft feed');
   }
   if (first.headers.get('cache-control') !== 'public, max-age=60') fail('cache-control is ' + first.headers.get('cache-control'));
   if (first.headers.get('access-control-allow-origin') !== worker.PAGES_ORIGIN) fail('CORS origin was reflected or missing');

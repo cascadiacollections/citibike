@@ -7,9 +7,7 @@
 
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import worker, { handle, compactStatus, PAGES_ORIGIN } from '../worker/src/index.js';
-
-const UPSTREAM = 'https://gbfs.citibikenyc.com/gbfs/en/station_status.json';
+import worker, { handle, compactStatus, PAGES_ORIGIN, UPSTREAM } from '../worker/src/index.js';
 const HOST = 'https://citibike-status.example';
 
 const FEED = {
@@ -192,6 +190,7 @@ describe('handle()', () => {
       assertCors(response);
       assert.deepEqual(await response.json(), COMPACT);
 
+      assert.equal(UPSTREAM, 'https://gbfs.lyft.com/gbfs/1.1/bkn/en/station_status.json');
       assert.deepEqual(worker.calls, [[UPSTREAM, {
         headers: { Accept: 'application/json', 'User-Agent': 'citibike-status-worker' }
       }]]);
@@ -273,15 +272,68 @@ describe('handle()', () => {
 
     it('should answer 502 when the upstream request throws', async () => {
       worker.upstream = () => { throw new Error('connect ECONNREFUSED'); };
-      await assertFailure(await worker.request('/station_status'), 'upstream unavailable');
-      assert.deepEqual(worker.logged(worker.errors), [{ message: 'upstream failed', error: 'connect ECONNREFUSED' }]);
+      const response = await worker.request('/station_status');
+      await assertFailure(response, 'upstream unavailable');
+      assert.equal(worker.calls.length, 1);
+      assert.deepEqual(worker.logged(worker.errors), [{
+        message: 'upstream failed',
+        host: 'gbfs.lyft.com',
+        error: 'Error: connect ECONNREFUSED'
+      }]);
       await assertNotCached();
+    });
+
+    it('should log a fetch cause without sending it to the client', async () => {
+      const cause = new Error('connect ECONNREFUSED 2600:9000:27c2::1:443');
+      const err = new TypeError('Network connection lost.');
+      err.cause = cause;
+      worker.upstream = () => { throw err; };
+      const response = await worker.request('/station_status');
+      await assertFailure(response, 'upstream unavailable');
+      assert.equal(worker.calls.length, 1);
+      assert.equal(worker.calls[0][0], UPSTREAM);
+      assert.deepEqual(worker.logged(worker.errors), [{
+        message: 'upstream failed',
+        host: 'gbfs.lyft.com',
+        error: 'TypeError: Network connection lost. | Error: connect ECONNREFUSED 2600:9000:27c2::1:443'
+      }]);
     });
 
     it('should log whatever was thrown, even if it is not an Error', async () => {
       worker.upstream = () => { throw 'offline'; };
       await assertFailure(await worker.request('/station_status'), 'upstream unavailable');
-      assert.deepEqual(worker.logged(worker.errors), [{ message: 'upstream failed', error: 'offline' }]);
+      assert.deepEqual(worker.logged(worker.errors), [{
+        message: 'upstream failed',
+        host: 'gbfs.lyft.com',
+        error: 'offline'
+      }]);
+
+      worker.errors.mock.resetCalls();
+      worker.upstream = () => { throw { message: 'reset' }; };
+      await assertFailure(await worker.request('/station_status'), 'upstream unavailable');
+      assert.deepEqual(worker.logged(worker.errors), [{
+        message: 'upstream failed',
+        host: 'gbfs.lyft.com',
+        error: 'Error: [object Object]'
+      }]);
+    });
+
+    it('should stop walking a cause cycle and a long chain', async () => {
+      const loop = new Error('loop');
+      loop.cause = loop;
+      worker.upstream = () => { throw loop; };
+      await assertFailure(await worker.request('/station_status'), 'upstream unavailable');
+      assert.equal(worker.logged(worker.errors)[0].error, 'Error: loop');
+
+      let deep = new Error('end');
+      deep = Object.assign(new Error('c'), { cause: deep });
+      deep = Object.assign(new Error('b'), { cause: deep });
+      deep = Object.assign(new Error('a'), { cause: deep });
+      deep = Object.assign(new Error('top'), { cause: deep });
+      worker.errors.mock.resetCalls();
+      worker.upstream = () => { throw deep; };
+      await assertFailure(await worker.request('/station_status'), 'upstream unavailable');
+      assert.equal(worker.logged(worker.errors)[0].error, 'Error: top | Error: a | Error: b | Error: c');
     });
 
     it('should answer 502 with the upstream status, and drop its body', async () => {
