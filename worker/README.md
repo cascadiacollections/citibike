@@ -4,7 +4,7 @@ A single Cloudflare Worker that lets the docs site read Citi Bike's `station_sta
 
 `https://gbfs.lyft.com/gbfs/1.1/bkn/en/station_status.json`
 
-`gbfs.citibikenyc.com` is the same feed behind CloudFront, but its IPv6 addresses refuse port 443. A Worker follows those addresses and the fetch throws. `gbfs.lyft.com` has no IPv6 addresses. The 1.1 file still includes `legacy_id`, which the map uses. The 2.3 file does not.
+The 1.1 file includes `legacy_id`, which the map uses. The 2.3 file does not.
 
 It stores a compact JSON body in the [Cache API](https://developers.cloudflare.com/workers/runtime-apis/cache/) for 60 seconds, which is the feed's `ttl`. Responses set `Cache-Control: public, max-age=60` and `Access-Control-Allow-Origin: https://cascadiacollections.github.io`. Any other path returns 404. There are no secrets and no bindings.
 
