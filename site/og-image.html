@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <!-- Source for og-image.png, kept in the repo so the card can be regenerated
        without a design tool. Render at exactly 1200x630, for example with
-       google-chrome --headless --screenshot --window-size=1200,630 -->
+       google-chrome --headless --screenshot=og-image.png --window-size=1200,630 og-image.html
+       then recompress it losslessly (it stays a PNG: social scrapers need one):
+       oxipng --opt max --strip all og-image.png -->
   <title>citibike social card source</title>
   <style>
     html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #f7f9fc; }

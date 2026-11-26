@@ -1,5 +1,6 @@
 /* citibike site. One stylesheet for the landing page and the API reference. */
 :root {
+  color-scheme: light dark;
   --bg: #f7f9fc;
   --bg-alt: #eef3f8;
   --tile: #ffffff;
@@ -14,7 +15,6 @@
   --glow: rgba(11, 92, 171, 0.14);
   --code-bg: #0f1722;
   --code-text: #e6edf5;
-  --code-muted: #8da0b5;
   --shadow: 0 1px 2px rgba(10, 30, 60, 0.04), 0 10px 30px rgba(10, 30, 60, 0.07);
   --radius: 18px;
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
@@ -50,6 +50,9 @@ body {
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
+/* Links inside running text can't rely on color alone to stand out. */
+main :is(p, li, td, dd) a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+main :is(p, li, td, dd) a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 code, pre { font-family: var(--mono); font-size: 0.88em; }
 :not(pre) > code {
@@ -59,6 +62,7 @@ code, pre { font-family: var(--mono); font-size: 0.88em; }
   padding: 0.08em 0.38em;
 }
 .skip { position: absolute; left: -9999px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .skip:focus { left: 16px; top: 12px; z-index: 10; background: var(--tile); padding: 8px 12px; border-radius: 10px; }
 .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 22px; }
 
@@ -129,7 +133,8 @@ h1 .grad { background: var(--grad); -webkit-background-clip: text; background-cl
 }
 .hero-copy a, .hero-copy button { pointer-events: auto; }
 .hero-scene h1 { font-size: clamp(30px, 4.6vw, 52px); margin-bottom: 8px; }
-.hero-scene .lede { font-size: 17px; line-height: 1.4; margin: 0 auto 14px; max-width: 36rem; }
+/* Full-strength text: this line sits where the scrim thins out over the map. */
+.hero-scene .lede { font-size: 17px; line-height: 1.4; margin: 0 auto 14px; max-width: 36rem; color: var(--text); }
 .hero-scene .eyebrow { margin-bottom: 8px; }
 .copy-btn {
   display: inline-flex;
@@ -215,7 +220,7 @@ h1 .grad { background: var(--grad); -webkit-background-clip: text; background-cl
 .station-tip strong { display: block; font-size: 14px; margin-bottom: 2px; }
 .station-tip[hidden], .zoom[hidden], .ticker:empty { display: none; }
 @media (prefers-reduced-motion: reduce) {
-  .hero-scene canvas, .hero-fallback { transition: none; }
+  .hero-scene canvas { transition: none; }
 }
 @media (max-width: 480px) {
   .hero-copy { padding-top: 12px; }
@@ -233,8 +238,6 @@ h1 .grad { background: var(--grad); -webkit-background-clip: text; background-cl
 .btn:hover { text-decoration: none; border-color: var(--accent); }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-.badges { margin-top: 22px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
-.badges span { border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; background: var(--tile); }
 
 /* sections */
 section { padding: 56px 0; }
@@ -276,7 +279,8 @@ td code { white-space: nowrap; }
 .site-footer p { margin: 0; }
 
 /* API reference */
-.doc { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; padding: 40px 0 72px; }
+/* padding-block, so .wrap keeps its side gutters and the page lines up with the header. */
+.doc { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; padding-block: 40px 72px; }
 .toc { position: sticky; top: 78px; align-self: start; font-size: 15px; max-height: calc(100vh - 100px); overflow-y: auto; }
 .toc h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 18px 0 6px; }
 .toc h2:first-child { margin-top: 0; }
