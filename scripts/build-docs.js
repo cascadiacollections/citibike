@@ -276,7 +276,7 @@ var html = [
   '    <nav class="toc" aria-label="On this page">' + toc + '</nav>',
   '    <main id="main">',
   '      <h1>API reference</h1>',
-  '      <p class="intro">citibike ' + esc(pkg.version) + '. Generated from the JSDoc comments in <a href="https://github.com/cascadiacollections/citibike/blob/master/src/citibike.ts"><code>src/citibike.ts</code></a>.</p>',
+  '      <p class="intro">citibike ' + esc(pkg.version) + '. Generated from the JSDoc comments in <a href="https://github.com/cascadiacollections/citibike/blob/main/src/citibike.ts"><code>src/citibike.ts</code></a>.</p>',
   '      <p>The promise methods are the 3.x API. They resolve with plain objects and reject with a <a href="#CitibikeError"><code>CitibikeError</code></a> whose <code>code</code> says what went wrong.</p>',
   '      <p>The callback methods keep the 2.x signatures and result shapes, so code written for 2.x keeps working. Each one calls back with a single object. When something goes wrong that object is an <a href="#ErrorResult"><code>ErrorResult</code></a> with <code>ok: false</code>, so check <code>data.ok</code> first. The only things that throw are a missing callback and a null URL passed to <code>get()</code>.</p>',
   '      <section>',

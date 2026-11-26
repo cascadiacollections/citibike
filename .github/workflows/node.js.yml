@@ -18,14 +18,14 @@ name: CI
 # read worker/src, and pages.yml does not list that directory.
 #
 # A workflow skipped by a path filter reports no check at all. That is fine
-# while no status check is required on master. If a required check is ever
+# while no status check is required on main. If a required check is ever
 # added, move the filtering into a job so the check still reports.
 #
 # Kept in sync between `push` and `pull_request` by hand; GitHub Actions does
 # not support YAML anchors.
 on:
   push:
-    branches: [master]
+    branches: [main]
     paths:
       - "**"
       - "!site/**"
@@ -35,7 +35,7 @@ on:
       - "!.github/**"
       - ".github/workflows/node.js.yml"
   pull_request:
-    branches: [master]
+    branches: [main]
     paths:
       - "**"
       - "!site/**"

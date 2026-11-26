@@ -4,7 +4,7 @@ name: Refresh station snapshot
 # when the station rows actually changed. The fallback PNG stays put: redraw
 # it with scripts/render-fallback.js when the picture should change, so the
 # daily job does not churn a binary. A push made with the default
-# GITHUB_TOKEN does not start other workflows, so a real change on master
+# GITHUB_TOKEN does not start other workflows, so a real change on main
 # also dispatches the existing Pages workflow. That is the only deploy this
 # file triggers. It never publishes to npm and never deploys the Worker.
 #
@@ -65,7 +65,7 @@ jobs:
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Redeploy GitHub Pages
-        if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/master'
+        if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run pages.yml --ref master --repo "${GITHUB_REPOSITORY}"
+        run: gh workflow run pages.yml --ref main --repo "${GITHUB_REPOSITORY}"

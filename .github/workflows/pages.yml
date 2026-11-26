@@ -8,7 +8,7 @@ name: Deploy site and API docs
 # This workflow only publishes the site. It never publishes to npm.
 on:
   push:
-    branches: [master]
+    branches: [main]
     # Kept in sync with the `pull_request` list below by hand; GitHub Actions
     # does not support YAML anchors.
     paths:
@@ -18,7 +18,7 @@ on:
       - "package.json"
       - ".github/workflows/pages.yml"
   # Build-only validation before merge, so a broken link or a JSDoc change the
-  # generator can't read is caught on the PR instead of on master.
+  # generator can't read is caught on the PR instead of on main.
   pull_request:
     paths:
       - "site/**"
@@ -37,7 +37,7 @@ permissions:
 # One Pages deploy at a time; don't cancel an in-flight publish. PR validation
 # is keyed by ref so a new push supersedes the previous one.
 concurrency:
-  group: pages-${{ github.event_name == 'pull_request' && github.ref || 'master' }}
+  group: pages-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
