@@ -1,16 +1,18 @@
 /**
  * Tests for the promise API against a local GBFS fixture server.
- * Test Framework: Mocha (https://mochajs.org/)
- * Assertions: Should (https://github.com/shouldjs/should.js)
+ * Runner: node:test. Assertions: node:assert/strict.
  */
 
-var Citibike = require('..'),
-    should = require('should'),
-    support = require('./support/server');
+const { describe, it, before, after, beforeEach } = require('node:test');
+const assert = require('node:assert/strict');
 
-var city = support.city(400);
+const Citibike = require('..');
+const support = require('./support/server');
 
-var ROUTES = {
+const rejected = support.rejected;
+const city = support.city(400);
+
+const ROUTES = {
   '/gbfs/en/station_information.json': { body: support.fixture('station_information.json') },
   '/gbfs/en/station_status.json': { body: support.fixture('station_status.json') },
   '/gbfs/en/system_information.json': {
@@ -28,39 +30,37 @@ var ROUTES = {
   '/drop.json': { drop: '{"data":{"stations":[{"station_id":"a"' }
 };
 
-var server, citibike;
-
-function rejected(promise) {
-  return promise.then(function() {
-    throw new Error('expected the promise to reject');
-  }, function(error) {
-    return error;
-  });
+function instanceOf(value, Type) {
+  assert.ok(value instanceof Type, 'expected an instance of ' + Type.name + ', got ' + value);
 }
 
-describe('promise API', function() {
-  before(function(done) {
-    support.start(ROUTES, function(s) {
-      server = s;
-      done();
-    });
+function within(value, min, max) {
+  assert.ok(value >= min && value <= max, value + ' is not within ' + min + '..' + max);
+}
+
+function approximately(actual, expected, delta) {
+  assert.ok(Math.abs(actual - expected) <= delta, actual + ' is not within ' + delta + ' of ' + expected);
+}
+
+describe('promise API', () => {
+  let server, citibike;
+
+  before(async () => {
+    server = await support.start(ROUTES);
   });
 
-  after(function(done) {
-    server.closeAllConnections();
-    server.close(done);
-  });
+  after(() => support.stop(server));
 
-  beforeEach(function() {
+  beforeEach(() => {
     server.requests.length = 0;
     citibike = new Citibike({ restBase: server.base + '/gbfs/en' });
   });
 
-  describe('Citibike.stations()', function() {
-    it('should join station_information and station_status', async function() {
-      var stations = await citibike.stations();
-      stations.should.have.length(2);
-      stations[0].should.eql({
+  describe('Citibike.stations()', () => {
+    it('should join station_information and station_status', async () => {
+      const stations = await citibike.stations();
+      assert.equal(stations.length, 2);
+      assert.deepEqual(stations[0], {
         id: '66db237e-0aca-11e7-82f6-3863bb44ef7c',
         legacyId: 72,
         name: 'W 52 St & 11 Ave',
@@ -80,267 +80,268 @@ describe('promise API', function() {
         isReturning: true,
         lastReported: 1761955201
       });
-      should(stations[1].legacyId).equal(null);
-      stations[1].isRenting.should.equal(false);
+      assert.equal(stations[1].legacyId, null);
+      assert.equal(stations[1].isRenting, false);
     });
 
-    it('should fetch both feeds at once', async function() {
+    it('should fetch both feeds at once', async () => {
       await citibike.stations();
-      server.requests.slice().sort().should.eql([
+      assert.deepEqual(server.requests.slice().sort(), [
         '/gbfs/en/station_information.json',
         '/gbfs/en/station_status.json'
       ]);
     });
 
-    it('should reject with EPAYLOAD when a feed has no stations', async function() {
-      var client = new Citibike({ restBase: server.base + '/empty' });
-      var error = await rejected(client.stations());
-      error.should.be.instanceof(Citibike.CitibikeError);
-      error.code.should.equal('EPAYLOAD');
-      error.message.should.match(/Unexpected station_status payload/);
+    it('should reject with EPAYLOAD when a feed has no stations', async () => {
+      const client = new Citibike({ restBase: server.base + '/empty' });
+      const error = await rejected(client.stations());
+      instanceOf(error, Citibike.CitibikeError);
+      assert.equal(error.code, 'EPAYLOAD');
+      assert.match(error.message, /Unexpected station_status payload/);
     });
   });
 
-  describe('caching', function() {
-    it('should serve repeat calls from memory while the ttl lasts', async function() {
+  describe('caching', () => {
+    it('should serve repeat calls from memory while the ttl lasts', async () => {
       await citibike.stations();
       await citibike.stations();
       await citibike.station(72);
-      server.requests.should.have.length(2);
+      assert.equal(server.requests.length, 2);
     });
 
-    it('should share one request between concurrent callers', async function() {
+    it('should share one request between concurrent callers', async () => {
       await Promise.all([citibike.stations(), citibike.stations(), citibike.feed('station_status')]);
-      server.requests.should.have.length(2);
+      assert.equal(server.requests.length, 2);
     });
 
-    it('should refetch with fresh: true', async function() {
+    it('should refetch with fresh: true', async () => {
       await citibike.stations();
       await citibike.stations({ fresh: true });
-      server.requests.should.have.length(4);
+      assert.equal(server.requests.length, 4);
     });
 
-    it('should refetch after clearCache()', async function() {
+    it('should refetch after clearCache()', async () => {
       await citibike.feed('system_information');
-      citibike.clearCache().should.equal(citibike);
+      assert.equal(citibike.clearCache(), citibike);
       await citibike.feed('system_information');
-      server.requests.should.have.length(2);
+      assert.equal(server.requests.length, 2);
     });
 
-    it('should not cache when cache: false', async function() {
-      var client = new Citibike({ restBase: server.base + '/gbfs/en', cache: false });
+    it('should not cache when cache: false', async () => {
+      const client = new Citibike({ restBase: server.base + '/gbfs/en', cache: false });
       await client.feed('system_information');
       await client.feed('system_information');
-      server.requests.should.have.length(2);
+      assert.equal(server.requests.length, 2);
     });
 
-    it('should not cache a feed whose ttl is 0', async function() {
+    it('should not cache a feed whose ttl is 0', async () => {
       await citibike.feed('no_ttl');
       await citibike.feed('no_ttl');
-      server.requests.should.have.length(2);
+      assert.equal(server.requests.length, 2);
     });
 
-    it('should not cache failures', async function() {
+    it('should not cache failures', async () => {
       await rejected(citibike.feed(server.base + '/missing.json'));
       await rejected(citibike.feed(server.base + '/missing.json'));
-      server.requests.should.have.length(2);
+      assert.equal(server.requests.length, 2);
     });
 
-    it('should keep each client\'s cache to itself', async function() {
+    it('should keep each client\'s cache to itself', async () => {
       await citibike.feed('system_information');
       await new Citibike({ restBase: server.base + '/gbfs/en' }).feed('system_information');
-      server.requests.should.have.length(2);
+      assert.equal(server.requests.length, 2);
     });
   });
 
-  describe('Citibike.station()', function() {
-    it('should find a station by GBFS id, legacy id or short name', async function() {
-      var byId = await citibike.station('66db237e-0aca-11e7-82f6-3863bb44ef7c');
-      var byLegacy = await citibike.station(72);
-      var byLegacyString = await citibike.station('72');
-      var byShortName = await citibike.station('5329.03');
-      byId.name.should.equal('W 52 St & 11 Ave');
-      byLegacy.should.eql(byId);
-      byLegacyString.should.eql(byId);
-      byShortName.name.should.equal('Broadway & W 24 St');
+  describe('Citibike.station()', () => {
+    it('should find a station by GBFS id, legacy id or short name', async () => {
+      const byId = await citibike.station('66db237e-0aca-11e7-82f6-3863bb44ef7c');
+      const byLegacy = await citibike.station(72);
+      const byLegacyString = await citibike.station('72');
+      const byShortName = await citibike.station('5329.03');
+      assert.equal(byId.name, 'W 52 St & 11 Ave');
+      assert.deepEqual(byLegacy, byId);
+      assert.deepEqual(byLegacyString, byId);
+      assert.equal(byShortName.name, 'Broadway & W 24 St');
     });
 
-    it('should resolve with null when nothing matches', async function() {
-      should(await citibike.station('nope')).equal(null);
-      should(await citibike.station(null)).equal(null);
+    it('should resolve with null when nothing matches', async () => {
+      assert.equal(await citibike.station('nope'), null);
+      assert.equal(await citibike.station(null), null);
     });
   });
 
-  describe('Citibike.nearest()', function() {
-    var point = { latitude: 40.76, longitude: -73.97 };
+  describe('Citibike.nearest()', () => {
+    const point = { latitude: 40.76, longitude: -73.97 };
 
-    beforeEach(function() {
+    beforeEach(() => {
       citibike = new Citibike({ restBase: server.base + '/city' });
     });
 
-    it('should return the closest stations, nearest first', async function() {
-      var all = await citibike.stations();
-      var expected = all.map(function(s) {
+    it('should return the closest stations, nearest first', async () => {
+      const all = await citibike.stations();
+      const expected = all.map((s) => {
         return { id: s.id, distance: Citibike.distance(point, s) };
-      }).sort(function(a, b) { return a.distance - b.distance; }).slice(0, 5);
+      }).sort((a, b) => a.distance - b.distance).slice(0, 5);
 
-      var near = await citibike.nearest(point);
-      near.map(function(s) { return s.id; }).should.eql(expected.map(function(s) { return s.id; }));
-      near[0].distance.should.be.approximately(expected[0].distance, 1e-6);
-      near[0].name.should.be.type('string');
-      should.not.exist(all[0].distance);
+      const near = await citibike.nearest(point);
+      assert.deepEqual(near.map((s) => s.id), expected.map((s) => s.id));
+      approximately(near[0].distance, expected[0].distance, 1e-6);
+      assert.equal(typeof near[0].name, 'string');
+      assert.equal(all[0].distance, undefined);
     });
 
-    it('should accept { lat, lon } and honour limit', async function() {
-      var near = await citibike.nearest({ lat: point.latitude, lon: point.longitude }, { limit: 12 });
-      near.should.have.length(12);
-      near[0].distance.should.be.belowOrEqual(near[11].distance);
+    it('should accept { lat, lon } and honour limit', async () => {
+      const near = await citibike.nearest({ lat: point.latitude, lon: point.longitude }, { limit: 12 });
+      assert.equal(near.length, 12);
+      assert.ok(near[0].distance <= near[11].distance);
     });
 
-    it('should leave out stations beyond the radius', async function() {
-      var near = await citibike.nearest(point, { limit: 400, radius: 500 });
-      near.length.should.be.within(1, 399);
-      near.forEach(function(s) { s.distance.should.be.belowOrEqual(500); });
-      (await citibike.nearest(point, { radius: 0 })).should.eql([]);
+    it('should leave out stations beyond the radius', async () => {
+      const near = await citibike.nearest(point, { limit: 400, radius: 500 });
+      within(near.length, 1, 399);
+      near.forEach((s) => assert.ok(s.distance <= 500));
+      assert.deepEqual(await citibike.nearest(point, { radius: 0 }), []);
     });
 
-    it('should filter by what is available', async function() {
-      var bikes = await citibike.nearest(point, { limit: 400, available: 'bikes' });
-      var ebikes = await citibike.nearest(point, { limit: 400, available: 'ebikes' });
-      var docks = await citibike.nearest(point, { limit: 400, available: 'docks' });
-      bikes.length.should.be.within(1, 399);
-      bikes.forEach(function(s) { (s.isRenting && s.bikesAvailable > 0).should.equal(true); });
-      ebikes.length.should.be.within(1, bikes.length);
-      ebikes.forEach(function(s) { (s.isRenting && s.ebikesAvailable > 0).should.equal(true); });
-      docks.forEach(function(s) { (s.isReturning && s.docksAvailable > 0).should.equal(true); });
+    it('should filter by what is available', async () => {
+      const bikes = await citibike.nearest(point, { limit: 400, available: 'bikes' });
+      const ebikes = await citibike.nearest(point, { limit: 400, available: 'ebikes' });
+      const docks = await citibike.nearest(point, { limit: 400, available: 'docks' });
+      within(bikes.length, 1, 399);
+      bikes.forEach((s) => assert.equal(s.isRenting && s.bikesAvailable > 0, true));
+      within(ebikes.length, 1, bikes.length);
+      ebikes.forEach((s) => assert.equal(s.isRenting && s.ebikesAvailable > 0, true));
+      docks.forEach((s) => assert.equal(s.isReturning && s.docksAvailable > 0, true));
     });
 
-    it('should reject bad arguments with a TypeError and no request', async function() {
+    it('should reject bad arguments with a TypeError and no request', async () => {
       server.requests.length = 0;
-      (await rejected(citibike.nearest())).should.be.instanceof(TypeError);
-      (await rejected(citibike.nearest({ latitude: 'x', longitude: 1 }))).should.be.instanceof(TypeError);
-      (await rejected(citibike.nearest({ latitude: 91, longitude: 0 }))).should.be.instanceof(TypeError);
-      (await rejected(citibike.nearest(point, { limit: 0 }))).should.be.instanceof(TypeError);
-      (await rejected(citibike.nearest(point, { radius: -1 }))).should.be.instanceof(TypeError);
-      (await rejected(citibike.nearest(point, { available: 'scooters' }))).should.be.instanceof(TypeError);
-      server.requests.should.eql([]);
+      instanceOf(await rejected(citibike.nearest()), TypeError);
+      instanceOf(await rejected(citibike.nearest({ latitude: 'x', longitude: 1 })), TypeError);
+      instanceOf(await rejected(citibike.nearest({ latitude: 91, longitude: 0 })), TypeError);
+      instanceOf(await rejected(citibike.nearest(point, { limit: 0 })), TypeError);
+      instanceOf(await rejected(citibike.nearest(point, { radius: -1 })), TypeError);
+      instanceOf(await rejected(citibike.nearest(point, { available: 'scooters' })), TypeError);
+      assert.deepEqual(server.requests, []);
     });
   });
 
-  describe('Citibike.feed()', function() {
-    it('should fetch a feed by name, path or absolute url', async function() {
-      var byName = await citibike.feed('system_information');
-      var byPath = await citibike.feed('/system_information.json');
-      var byUrl = await citibike.feed(server.base + '/gbfs/en/system_information.json');
-      byName.data.name.should.equal('Citi Bike');
-      byName.ttl.should.equal(60);
-      byPath.should.equal(byName);
-      byUrl.should.equal(byName);
-      server.requests.should.eql(['/gbfs/en/system_information.json']);
+  describe('Citibike.feed()', () => {
+    it('should fetch a feed by name, path or absolute url', async () => {
+      const byName = await citibike.feed('system_information');
+      const byPath = await citibike.feed('/system_information.json');
+      const byUrl = await citibike.feed(server.base + '/gbfs/en/system_information.json');
+      assert.equal(byName.data.name, 'Citi Bike');
+      assert.equal(byName.ttl, 60);
+      assert.equal(byPath, byName);
+      assert.equal(byUrl, byName);
+      assert.deepEqual(server.requests, ['/gbfs/en/system_information.json']);
     });
 
-    it('should use the configured station feed paths', async function() {
-      var client = new Citibike({ restBase: server.base, stationStatusURL: '/city/station_status.json' });
-      (await client.feed('station_status')).data.stations.should.have.length(400);
+    it('should use the configured station feed paths', async () => {
+      const client = new Citibike({ restBase: server.base, stationStatusURL: '/city/station_status.json' });
+      assert.equal((await client.feed('station_status')).data.stations.length, 400);
     });
 
-    it('should reject a name that is not a string', async function() {
-      (await rejected(citibike.feed())).should.be.instanceof(TypeError);
-      (await rejected(citibike.feed(''))).should.be.instanceof(TypeError);
+    it('should reject a name that is not a string', async () => {
+      instanceOf(await rejected(citibike.feed()), TypeError);
+      instanceOf(await rejected(citibike.feed('')), TypeError);
     });
   });
 
-  describe('errors', function() {
-    it('should reject with EHTTP and the status', async function() {
-      var error = await rejected(citibike.feed(server.base + '/missing.json'));
-      error.should.be.instanceof(Citibike.CitibikeError).and.instanceof(Error);
-      error.name.should.equal('CitibikeError');
-      error.code.should.equal('EHTTP');
-      error.status.should.equal(503);
-      error.url.should.equal(server.base + '/missing.json');
+  describe('errors', () => {
+    it('should reject with EHTTP and the status', async () => {
+      const error = await rejected(citibike.feed(server.base + '/missing.json'));
+      instanceOf(error, Citibike.CitibikeError);
+      instanceOf(error, Error);
+      assert.equal(error.name, 'CitibikeError');
+      assert.equal(error.code, 'EHTTP');
+      assert.equal(error.status, 503);
+      assert.equal(error.url, server.base + '/missing.json');
     });
 
-    it('should reject with EPARSE for invalid JSON', async function() {
-      var error = await rejected(citibike.feed(server.base + '/broken.json'));
-      error.code.should.equal('EPARSE');
-      should(error.status).equal(null);
-      error.cause.should.be.instanceof(SyntaxError);
+    it('should reject with EPARSE for invalid JSON', async () => {
+      const error = await rejected(citibike.feed(server.base + '/broken.json'));
+      assert.equal(error.code, 'EPARSE');
+      assert.equal(error.status, null);
+      instanceOf(error.cause, SyntaxError);
     });
 
-    it('should reject with EPAYLOAD for JSON that is not a feed', async function() {
-      (await rejected(citibike.feed(server.base + '/array.json'))).code.should.equal('EPAYLOAD');
+    it('should reject with EPAYLOAD for JSON that is not a feed', async () => {
+      assert.equal((await rejected(citibike.feed(server.base + '/array.json'))).code, 'EPAYLOAD');
     });
 
-    it('should reject with ETIMEDOUT after options.timeout', async function() {
-      var client = new Citibike({ timeout: 50 });
-      var error = await rejected(client.feed(server.base + '/hang.json'));
-      error.code.should.equal('ETIMEDOUT');
-      error.message.should.match(/timed out after 50ms/);
+    it('should reject with ETIMEDOUT after options.timeout', async () => {
+      const client = new Citibike({ timeout: 50 });
+      const error = await rejected(client.feed(server.base + '/hang.json'));
+      assert.equal(error.code, 'ETIMEDOUT');
+      assert.match(error.message, /timed out after 50ms/);
     });
 
-    it('should reject with ENETWORK when the connection is refused', async function() {
+    it('should reject with ENETWORK when the connection is refused', async () => {
       // Port 1 on loopback: refused immediately, no external network involved.
-      (await rejected(citibike.feed('http://127.0.0.1:1/x.json'))).code.should.equal('ENETWORK');
+      assert.equal((await rejected(citibike.feed('http://127.0.0.1:1/x.json'))).code, 'ENETWORK');
     });
 
-    it('should reject with ENETWORK when the connection drops mid-response', async function() {
-      var error = await rejected(citibike.feed(server.base + '/drop.json'));
-      error.code.should.equal('ENETWORK');
-      error.message.should.match(/Connection closed/);
+    it('should reject with ENETWORK when the connection drops mid-response', async () => {
+      const error = await rejected(citibike.feed(server.base + '/drop.json'));
+      assert.equal(error.code, 'ENETWORK');
+      assert.match(error.message, /Connection closed/);
     });
   });
 
-  describe('signal', function() {
-    it('should reject with EABORTED without a request when already aborted', async function() {
-      var error = await rejected(citibike.stations({ signal: AbortSignal.abort() }));
-      error.code.should.equal('EABORTED');
-      server.requests.should.eql([]);
+  describe('signal', () => {
+    it('should reject with EABORTED without a request when already aborted', async () => {
+      const error = await rejected(citibike.stations({ signal: AbortSignal.abort() }));
+      assert.equal(error.code, 'EABORTED');
+      assert.deepEqual(server.requests, []);
     });
 
-    it('should reject with EABORTED when aborted mid-request', async function() {
-      var controller = new AbortController();
-      var client = new Citibike({ timeout: 2000 });
-      var pending = rejected(client.feed(server.base + '/hang.json', { signal: controller.signal }));
-      setTimeout(function() { controller.abort(); }, 20);
-      (await pending).code.should.equal('EABORTED');
+    it('should reject with EABORTED when aborted mid-request', async () => {
+      const controller = new AbortController();
+      const client = new Citibike({ timeout: 2000 });
+      const pending = rejected(client.feed(server.base + '/hang.json', { signal: controller.signal }));
+      setTimeout(() => controller.abort(), 20);
+      assert.equal((await pending).code, 'EABORTED');
     });
 
-    it('should not abort another caller sharing the same request', async function() {
-      var controller = new AbortController();
-      var aborted = rejected(citibike.feed('system_information', { signal: controller.signal }));
-      var kept = citibike.feed('system_information');
+    it('should not abort another caller sharing the same request', async () => {
+      const controller = new AbortController();
+      const aborted = rejected(citibike.feed('system_information', { signal: controller.signal }));
+      const kept = citibike.feed('system_information');
       controller.abort();
-      (await aborted).code.should.equal('EABORTED');
-      (await kept).data.name.should.equal('Citi Bike');
+      assert.equal((await aborted).code, 'EABORTED');
+      assert.equal((await kept).data.name, 'Citi Bike');
     });
   });
 
-  describe('options.fetch', function() {
-    it('should use the fetch implementation it is given', async function() {
-      var calls = [];
-      var client = new Citibike({
+  describe('options.fetch', () => {
+    it('should use the fetch implementation it is given', async () => {
+      const calls = [];
+      const client = new Citibike({
         headers: { 'X-Test': '1' },
-        fetch: function(url, init) {
+        fetch: (url, init) => {
           calls.push({ url: url, headers: init.headers });
           return Promise.resolve(new Response(JSON.stringify({ ttl: 5, data: { hello: 'world' } })));
         }
       });
-      (await client.feed('system_alerts')).data.hello.should.equal('world');
-      calls.should.have.length(1);
-      calls[0].url.should.equal('https://gbfs.citibikenyc.com/gbfs/en/system_alerts.json');
-      calls[0].headers['X-Test'].should.equal('1');
-      server.requests.should.eql([]);
+      assert.equal((await client.feed('system_alerts')).data.hello, 'world');
+      assert.equal(calls.length, 1);
+      assert.equal(calls[0].url, 'https://gbfs.citibikenyc.com/gbfs/en/system_alerts.json');
+      assert.equal(calls[0].headers['X-Test'], '1');
+      assert.deepEqual(server.requests, []);
     });
   });
 
-  describe('Citibike.distance()', function() {
-    it('should measure meters between two points', function() {
-      var a = { latitude: 40.76727216, longitude: -73.99392888 };
-      var b = { lat: 40.7423543, lon: -73.98915076 };
-      Citibike.distance(a, a).should.equal(0);
-      Citibike.distance(a, b).should.be.approximately(2800, 5);
-      Citibike.distance(a, b).should.equal(Citibike.distance(b, a));
-      (function() { Citibike.distance(a, {}); }).should.throw(TypeError);
+  describe('Citibike.distance()', () => {
+    it('should measure meters between two points', () => {
+      const a = { latitude: 40.76727216, longitude: -73.99392888 };
+      const b = { lat: 40.7423543, lon: -73.98915076 };
+      assert.equal(Citibike.distance(a, a), 0);
+      approximately(Citibike.distance(a, b), 2800, 5);
+      assert.equal(Citibike.distance(a, b), Citibike.distance(b, a));
+      assert.throws(() => { Citibike.distance(a, {}); }, TypeError);
     });
   });
 });

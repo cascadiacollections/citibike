@@ -74,8 +74,10 @@ The callback methods keep their 2.x signatures, and `getStations()` keeps its
  * The source is now TypeScript (`src/citibike.ts`); `npm run build` compiles it to the
    `lib/citibike.js` and `lib/citibike.d.ts` the package ships. `lib/` is no longer committed.
  * CI runs on Node 22.x and 24.x with current `actions/checkout` and `actions/setup-node`,
-   and type-checks the bundled declarations; mocha pinned to `^12`, should to `^13`;
-   supertest removed.
+   and type-checks the bundled declarations. The tests use Node's built-in runner
+   (`node:test` and `node:assert`); mocha, should and supertest are removed.
+   `npm run coverage` fails if coverage drops below its thresholds, and
+   `npm run test:bun` runs the same suite under Bun.
 
 2.2.0 - 2.2.3 / 2013-07-27
 ==========================

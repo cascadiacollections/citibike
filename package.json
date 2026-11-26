@@ -48,9 +48,10 @@
     "build": "node -e \"require('fs').rmSync('lib', { recursive: true, force: true })\" && tsc -p tsconfig.json",
     "pretest": "npm run build",
     "prepack": "npm run build",
-    "test": "mocha && npm run test:types",
+    "test": "node --test \"test/*.test.js\" \"test/*.test.mjs\" && npm run test:types",
     "test:types": "node scripts/typecheck.js",
-    "coverage": "npm test",
+    "test:bun": "bun run build && bun test ./test/",
+    "coverage": "npm run build && node --test --experimental-test-coverage --test-coverage-include=\"lib/**\" --test-coverage-include=\"src/**\" --test-coverage-include=\"scripts/snapshot-stations.js\" --test-coverage-include=\"worker/src/**\" --test-coverage-lines=99 --test-coverage-branches=98 --test-coverage-functions=98 \"test/*.test.js\" \"test/*.test.mjs\"",
     "check:pkg": "publint --strict && attw --pack .",
     "docs": "node scripts/build-docs.js",
     "docs:check": "node scripts/check-site.js",
@@ -59,9 +60,7 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@types/node": "^22.20.7",
-    "mocha": "^12.0.3",
     "publint": "^0.3.25",
-    "should": "^13.2.3",
     "typescript": "^7.0.2"
   },
   "sideEffects": false

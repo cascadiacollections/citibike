@@ -257,11 +257,16 @@ citibike.getStations(null, function(data) {
 
       $ npm test
       $ npm run test:types    # compiles test/types against the bundled declarations
+      $ npm run coverage      # the same tests with coverage; fails below the thresholds
+      $ bun run test:bun      # the same tests under Bun
+
+  The tests use Node's built-in runner (`node:test` and `node:assert`), so there
+  is nothing to install beyond the dev dependencies.
 
   The source is TypeScript, in `src/citibike.ts`. `npm run build` compiles it with
   `tsc` into `lib/` (`citibike.js` and `citibike.d.ts`), which is what the package
-  ships and what the tests and examples load. `lib/` is not committed. `npm test`
-  and `npm pack` build first; run `npm run build` yourself before
+  ships and what the tests and examples load. `lib/` is not committed. `npm test`,
+  `npm run coverage`, `npm run test:bun` and `npm pack` build first; run `npm run build` yourself before
   `npm run test:types`, `npm run snapshot` or an example on a fresh checkout.
 
 ## Contributors

@@ -10,7 +10,11 @@ function fixture(name) {
   return fs.readFileSync(path.join(__dirname, '..', 'fixtures', name), 'utf8');
 }
 
-function start(routes, callback) {
+/**
+ * Starts the server on a free loopback port. Resolves with the server, which
+ * has `base` (its URL) and `requests` (every request URL so far, in order).
+ */
+function start(routes) {
   var server = http.createServer(function(req, res) {
     server.requests.push(req.url);
     var route = routes[req.url.split('?')[0]];
@@ -28,11 +32,35 @@ function start(routes, callback) {
     res.end(typeof route.body === 'function' ? route.body() : route.body);
   });
   server.requests = [];
-  server.listen(0, '127.0.0.1', function() {
-    server.base = 'http://127.0.0.1:' + server.address().port;
-    callback(server);
+  return new Promise(function(resolve, reject) {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', function() {
+      server.base = 'http://127.0.0.1:' + server.address().port;
+      resolve(server);
+    });
   });
-  return server;
+}
+
+/** Drops every open connection (hung requests included) and closes the server. */
+function stop(server) {
+  return new Promise(function(resolve) {
+    server.closeAllConnections();
+    server.close(function() { resolve(); });
+  });
+}
+
+/** Resolves with the single value a 2.x-style method passes to its callback. */
+function called(invoke) {
+  return new Promise(function(resolve) { invoke(resolve); });
+}
+
+/** Resolves with the error `promise` rejects with; rejects if it fulfils. */
+function rejected(promise) {
+  return promise.then(function() {
+    throw new Error('expected the promise to reject');
+  }, function(error) {
+    return error;
+  });
 }
 
 /**
@@ -77,4 +105,4 @@ function city(count) {
   return { information: feed(information), status: feed(status) };
 }
 
-module.exports = { start: start, fixture: fixture, city: city };
+module.exports = { start: start, stop: stop, fixture: fixture, city: city, called: called, rejected: rejected };
