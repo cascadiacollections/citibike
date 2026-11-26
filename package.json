@@ -26,6 +26,7 @@
     "David Mazza <http://www.davidmazza.com/>"
   ],
   "license": "MIT",
+  "type": "commonjs",
   "main": "./lib/citibike.js",
   "types": "./lib/citibike.d.ts",
   "exports": {
@@ -44,14 +45,20 @@
     "node": ">=22"
   },
   "scripts": {
+    "build": "node -e \"console.log('lib/ is hand-written until the TypeScript source lands')\"",
     "test": "mocha && npm run test:types",
     "test:types": "node scripts/typecheck.js",
+    "coverage": "npm test",
+    "check:pkg": "publint --strict && attw --pack .",
     "docs": "node scripts/build-docs.js",
     "docs:check": "node scripts/check-site.js",
     "snapshot": "node scripts/snapshot-stations.js"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@types/node": "^22.20.7",
     "mocha": "^12.0.3",
+    "publint": "^0.3.25",
     "should": "^13.2.3",
     "typescript": "^7.0.2"
   },
