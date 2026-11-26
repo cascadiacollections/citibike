@@ -24,3 +24,31 @@ updates:
       prefix: "ci"
     cooldown:
       default-days: 7
+
+  # Dev container features (.devcontainer/devcontainer.json and its lock file).
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      devcontainers:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore"
+    cooldown:
+      default-days: 7
+
+  # The dev container's base image and the Bun image, pinned by digest in
+  # .devcontainer/Dockerfile. The devcontainers ecosystem above only updates
+  # features, not images.
+  - package-ecosystem: "docker"
+    directory: "/.devcontainer"
+    schedule:
+      interval: "weekly"
+    groups:
+      docker:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore"
+    cooldown:
+      default-days: 7

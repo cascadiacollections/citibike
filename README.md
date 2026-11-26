@@ -269,6 +269,21 @@ citibike.getStations(null, function(data) {
   `npm run coverage`, `npm run test:bun` and `npm pack` build first; run `npm run build` yourself before
   `npm run test:types`, `npm run snapshot` or an example on a fresh checkout.
 
+## Development
+
+  The repository ships a [dev container](https://containers.dev/) with Node 24,
+  Bun and the GitHub CLI. Open the repo in GitHub Codespaces, or in VS Code with
+  the Dev Containers extension ("Reopen in Container"); it runs `npm ci` and
+  `npm run build` for you. Without a container you need Node 22 or newer.
+
+      $ npm ci                # install the pinned dev dependencies
+      $ npm run build         # build lib/
+      $ npm test              # tests plus the type check
+      $ npm run coverage      # tests with coverage
+      $ npm run check:pkg     # publint and arethetypeswrong on the packed tarball
+      $ npm run docs          # generate the API reference into site/
+      $ npm run docs:check    # check the site's links
+
 ## Contributors
 
   * [Brad Dickason](https://github.com/bdickason)

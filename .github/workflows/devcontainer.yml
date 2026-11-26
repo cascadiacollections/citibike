@@ -1,0 +1,51 @@
+name: Dev container
+
+# Builds the dev container from .devcontainer/ and runs the test suite inside
+# it, so a Dependabot bump of the base image, Bun or a feature is proven
+# before it merges. Runs only when the container definition (or this file)
+# changes. The image is built on the runner and thrown away: nothing is pushed
+# to a registry.
+on:
+  push:
+    branches: [master]
+    paths:
+      - ".devcontainer/**"
+      - ".github/workflows/devcontainer.yml"
+  pull_request:
+    branches: [master]
+    paths:
+      - ".devcontainer/**"
+      - ".github/workflows/devcontainer.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: devcontainer-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Build and test in the dev container
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # `devcontainer up` runs postCreateCommand (npm ci && npm run build)
+      # before runCmd, so runCmd only has to test.
+      - name: Build the dev container and run the tests
+        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
+        with:
+          push: never
+          runCmd: |
+            set -e
+            test "$(id -un)" = node
+            node --version
+            bun --version
+            gh --version
+            npm test
+            npm run check:pkg

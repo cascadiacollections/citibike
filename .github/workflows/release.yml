@@ -1,0 +1,113 @@
+name: Release to npm
+
+# Manual only. This workflow has a single trigger, the "Run workflow" button
+# (workflow_dispatch). It never runs on a push, a pull request, a tag or a
+# GitHub release, and no other workflow starts it.
+#
+# It checks out an existing git tag, builds and tests it, and publishes it to
+# npm with trusted publishing: npm exchanges this job's short-lived OIDC token
+# for publish rights, so there is no NPM_TOKEN secret. `dry-run` defaults to
+# true, which packs and validates without publishing.
+#
+# One-time setup on npmjs.com before the first real publish: package
+# `citibike` -> Settings -> Trusted Publisher -> GitHub Actions, with
+# organization `cascadiacollections`, repository `citibike`, workflow
+# `release.yml` and environment `npm`.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing git tag to publish, for example v3.0.0"
+        required: true
+        type: string
+      dry-run:
+        description: "Run `npm publish --dry-run` instead of publishing"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: ${{ inputs.dry-run && 'Dry run' || 'Publish' }} ${{ inputs.tag }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Protection rules (required reviewers, a wait timer) can be added to this
+    # environment in the repository settings.
+    environment: npm
+    permissions:
+      contents: read
+      # Lets npm request the OIDC token for trusted publishing and provenance.
+      id-token: write
+    env:
+      TAG: ${{ inputs.tag }}
+    steps:
+      - name: Check the tag format
+        run: |
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::'$TAG' is not a version tag such as v3.0.0"
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          persist-credentials: false
+
+      # No dependency cache here: a release build should not restore anything
+      # that another workflow run saved.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.x
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Require an npm with trusted publishing (11.5.1 or newer)
+        run: |
+          npm --version
+          node -e '
+            const [major, minor, patch] = process.argv[1].split(".").map(Number);
+            const ok = major > 11 || (major === 11 && (minor > 5 || (minor === 5 && patch >= 1)));
+            if (!ok) { console.error("::error::npm " + process.argv[1] + " is older than 11.5.1"); process.exit(1); }
+          ' "$(npm --version)"
+
+      - name: Check that package.json matches the tag
+        run: |
+          version="$(node -p 'require("./package.json").version')"
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error::package.json has version $version but the tag is $TAG"
+            exit 1
+          fi
+          echo "package.json version $version matches $TAG"
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run check:pkg
+
+      # npm refuses to publish a prerelease as `latest`, so a tag such as
+      # v3.1.0-beta.1 goes to the `next` dist-tag.
+      - name: Pick the npm dist-tag
+        id: dist
+        run: |
+          case "$TAG" in
+            *-*) echo "tag=next" >> "$GITHUB_OUTPUT" ;;
+            *) echo "tag=latest" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Publish (dry run)
+        if: ${{ inputs.dry-run }}
+        env:
+          DIST_TAG: ${{ steps.dist.outputs.tag }}
+        run: npm publish --dry-run --access public --tag "$DIST_TAG"
+
+      - name: Publish to npm
+        if: ${{ !inputs.dry-run }}
+        env:
+          DIST_TAG: ${{ steps.dist.outputs.tag }}
+        run: npm publish --provenance --access public --tag "$DIST_TAG"
