@@ -38,6 +38,6 @@ Then point the site at that URL. The page reads it from one line in `site/assets
 export const STATUS_WORKER_URL = 'https://citibike-status.<account>.workers.dev/station_status';
 ```
 
-Commit that change and merge it to `master`. The Pages workflow republishes the site when `site/**` changes.
+Commit that change and merge it to `main`. The Pages workflow republishes the site when `site/**` changes.
 
 The constant ships as `''`. While it is empty, the map stays on `site/data/stations.json`. It does not poll, and it does not show bike changes that did not happen. To turn live updates off again, set the constant back to `''` and merge.

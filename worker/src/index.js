@@ -1,16 +1,21 @@
 /**
  * Edge cache in front of Citi Bike's station_status feed.
  *
- * Browsers cannot read gbfs.citibikenyc.com (no CORS). This Worker fetches
- * that one URL, stores a compact JSON in the Cache API for the feed ttl,
- * and answers every other request in the colo from that cache. Upstream
- * sees about one request per minute per colo. Each viewer request still
- * invokes the Worker; see README.md for the free-tier arithmetic.
+ * Browsers cannot read the GBFS host (no CORS). This Worker fetches one
+ * station_status URL, stores a compact JSON in the Cache API for the feed
+ * ttl, and answers every other request in the colo from that cache.
+ * Upstream sees about one request per minute per colo. Each viewer request
+ * still invokes the Worker; see README.md for the free-tier arithmetic.
  *
- * No secrets. No other upstream hosts.
+ * No secrets. No other upstream hosts. No second try on failure.
  */
 
-const UPSTREAM = 'https://gbfs.citibikenyc.com/gbfs/en/station_status.json';
+// gbfs.citibikenyc.com is CloudFront with AAAA records that refuse port 443.
+// Workers use those addresses and fetch() throws, which is the live 502
+// "upstream unavailable". gbfs.lyft.com is the same feed, IPv4 only.
+// The 1.1 document still has legacy_id on every station. The 2.3 document
+// does not, and the map matches stations by that id.
+export const UPSTREAM = 'https://gbfs.lyft.com/gbfs/1.1/bkn/en/station_status.json';
 export const PAGES_ORIGIN = 'https://cascadiacollections.github.io';
 const MAX_BODY = 5 * 1024 * 1024;
 const TTL = 60;
@@ -48,6 +53,26 @@ function log(level, fields) {
   const line = JSON.stringify(fields);
   if (level === 'error') console.error(line);
   else console.log(line);
+}
+
+// Workers often hide the socket error on Error.cause. Keep that chain in
+// the logs. The client only ever sees a fixed sentence.
+function errorText(err) {
+  const parts = [];
+  const seen = new Set();
+  let current = err;
+  while (current != null && parts.length < 4 && !seen.has(current)) {
+    seen.add(current);
+    if (typeof current === 'string') {
+      parts.push(current);
+      break;
+    }
+    const name = current.name ? String(current.name) : 'Error';
+    const message = current instanceof Error ? current.message : String(current);
+    parts.push(name + ': ' + message);
+    current = current.cause;
+  }
+  return parts.join(' | ');
 }
 
 function corsHeaders(extra) {
@@ -113,7 +138,7 @@ export async function handle(request, ctx, deps) {
       headers: { Accept: 'application/json', 'User-Agent': 'citibike-status-worker' }
     });
   } catch (err) {
-    log('error', { message: 'upstream failed', error: err instanceof Error ? err.message : String(err) });
+    log('error', { message: 'upstream failed', host: new URL(UPSTREAM).hostname, error: errorText(err) });
     return jsonResponse({ ok: false, error: 'upstream unavailable' }, 502, 'no-store');
   }
 

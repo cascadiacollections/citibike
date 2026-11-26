@@ -62,7 +62,7 @@ const station = await citibike.station(72);
 
 ## Examples
 
-  Demos of the citibike module are located in: [./examples](https://github.com/cascadiacollections/citibike/tree/master/examples)
+  Demos of the citibike module are located in: [./examples](https://github.com/cascadiacollections/citibike/tree/main/examples)
 
 ## API Documentation
 
@@ -287,7 +287,7 @@ citibike.getStations(null, function(data) {
   The map on the docs site stays on the daily snapshot until `STATUS_WORKER_URL`
   in `site/assets/config.js` is set. That constant is the only place the page
   reads the Worker URL. Deploy steps are in
-  [worker/DEPLOY.md](https://github.com/cascadiacollections/citibike/blob/master/worker/DEPLOY.md).
+  [worker/DEPLOY.md](https://github.com/cascadiacollections/citibike/blob/main/worker/DEPLOY.md).
 
 ## Contributors
 
