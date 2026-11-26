@@ -64,6 +64,15 @@ const station = await citibike.station(72);
 
   Demos of the citibike module are located in: [./examples](https://github.com/cascadiacollections/citibike/tree/main/examples)
 
+  | Example | What it shows |
+  | --- | --- |
+  | `examples/bikes.js` | Stations, the nearest e-bikes and a raw GBFS feed with the promise API |
+  | `examples/callbacks.js` | The 2.x callback API, which 3.x keeps working |
+  | `examples/history.js` | Recording availability over time in a local SQLite file with `node:sqlite` (Node 22.13 or later), with nothing to install |
+
+      $ npm run build
+      $ node examples/history.js --once
+
 ## API Documentation
 
   The full reference, generated from the source, is at
