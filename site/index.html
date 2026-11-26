@@ -96,31 +96,31 @@
     <section>
       <div class="wrap">
         <h2>Why this library</h2>
-        <p class="sub"><code>getStations()</code> is the product. The rest keeps that one call predictable.</p>
+        <p class="sub"><code>stations()</code> is the product. The rest keeps that one call predictable.</p>
         <div class="grid">
           <div class="tile">
             <h3>Joined for you</h3>
-            <p>GBFS splits a station's name from its status. One callback returns both, matched by id.</p>
+            <p>GBFS splits a station's name from its status. One call returns both, matched by id.</p>
           </div>
           <div class="tile">
             <h3>Nothing else to install</h3>
-            <p>No runtime dependencies. It uses Node's built-in <code>http</code> and <code>https</code>.</p>
+            <p>No runtime dependencies. It uses Node's built-in <code>fetch</code>, and TypeScript types are included.</p>
           </div>
           <div class="tile">
             <h3>Errors you can handle</h3>
-            <p>Timeouts, bad status codes, bad JSON and a socket that dies mid-body all come back as <code>{ ok: false, error }</code>.</p>
+            <p>Timeouts, bad status codes, bad JSON and a socket that dies mid-body all reject with an error that has a <code>code</code>.</p>
           </div>
           <div class="tile">
             <h3>Cheap to refresh</h3>
-            <p><code>{ updateOnly: true }</code> hits only the status feed, so a once-a-minute poll is a single request.</p>
+            <p>Feeds are cached for as long as Citi Bike says they stay current, so calling in a loop doesn't hammer the feed.</p>
           </div>
           <div class="tile">
-            <h3>Point it at either host</h3>
-            <p>The default is <code>gbfs.citibikenyc.com</code>. Pass the Lyft mirror as <code>restBase</code> if you prefer that one.</p>
+            <h3>Nearest station built in</h3>
+            <p><code>nearest()</code> sorts stations by distance from a point, and can keep only those with a bike, an e-bike or a free dock.</p>
           </div>
           <div class="tile">
-            <h3>Same envelope as before</h3>
-            <p><code>ok</code>, <code>results</code>, <code>activeStations</code>. 3.x keeps the shape 2.x callers already check.</p>
+            <h3>2.x code keeps working</h3>
+            <p><code>getStations()</code> still calls back with <code>ok</code>, <code>results</code>, numeric ids and <code>nearbyStations</code>, as it did in 2.x.</p>
           </div>
         </div>
       </div>
@@ -134,24 +134,23 @@
           <div>
             <p class="label">example.js</p>
 <pre><code>const citibike = new (require('citibike'))();
-citibike.getStations(null, (data) =&gt; {
-  console.log(data.ok ? data.activeStations + ' stations renting' : data.error);
-});</code></pre>
+const stations = await citibike.stations();
+console.log(stations.filter((s) =&gt; s.isRenting).length + ' stations renting');</code></pre>
           </div>
           <div>
-            <p class="label">One station in <code>data.results</code></p>
+            <p class="label">One station in <code>stations</code></p>
 <pre><code>{
-  "label": "W 52 St &amp; 11 Ave",
-  "availableBikes": 12,
-  "availableEbikes": 3,
-  "availableDocks": 22,
+  "name": "W 52 St &amp; 11 Ave",
+  "bikesAvailable": 12,
+  "ebikesAvailable": 3,
+  "docksAvailable": 22,
   "latitude": 40.76727,
   "longitude": -73.99393,
-  "status": "Active"
+  "isRenting": true
 }</code></pre>
           </div>
         </div>
-        <p class="sub" style="margin-top:20px">Every field is in the <a href="api/#Station">API reference</a>. Check <code>data.ok</code> before you read <code>results</code>.</p>
+        <p class="sub" style="margin-top:20px">Every field is in the <a href="api/#Station">API reference</a>. Coming from 2.x? The <a href="api/#callback-methods">callback methods</a> are unchanged.</p>
       </div>
     </section>
 
@@ -166,7 +165,7 @@ citibike.getStations(null, (data) =&gt; {
           </div>
           <div class="tile">
             <h3>Updated about every minute</h3>
-            <p>The status feed publishes a 60 second <code>ttl</code>. <code>lastUpdate</code> tells you how fresh a reading is.</p>
+            <p>The status feed publishes a 60 second <code>ttl</code>. <code>lastReported</code> tells you how fresh a station's reading is.</p>
           </div>
           <div class="tile">
             <h3>The GBFS standard</h3>
@@ -182,10 +181,11 @@ citibike.getStations(null, (data) =&gt; {
         <h2>Coming from 2.x</h2>
         <p class="sub">Citi Bike shut down <code>appservices.citibikenyc.com</code>, so 3.0.0 reads GBFS instead.</p>
         <ul>
-          <li>Station <code>id</code> is a string.</li>
-          <li><code>availableEbikes</code>, <code>shortName</code>, <code>capacity</code> and <code>lastReported</code> are new. <code>nearbyStations</code> is gone.</li>
+          <li>Your callback code keeps working. <code>getStations()</code> returns the same envelope, the same numeric station <code>id</code> and <code>nearbyStations</code>.</li>
+          <li><code>stationId</code>, <code>availableEbikes</code>, <code>shortName</code>, <code>capacity</code> and <code>lastReported</code> are new.</li>
           <li><code>getBranches()</code> and <code>getHelmets()</code> always call back with <code>ok: false</code>. That data isn't published anymore.</li>
-          <li>Options you pass now override the defaults.</li>
+          <li>Options you pass now override the defaults, and a failed request calls back instead of hanging.</li>
+          <li>New code can use the promise methods: <code>stations()</code>, <code>station()</code>, <code>nearest()</code> and <code>feed()</code>.</li>
         </ul>
         <p>The full list is in the <a href="https://github.com/cascadiacollections/citibike/blob/master/CHANGELOG.md">changelog</a>.</p>
       </div>

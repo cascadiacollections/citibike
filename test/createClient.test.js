@@ -17,6 +17,7 @@ var defaults = {
   },
 
   timeout: 10000,
+  cache: true,
 
   restBase: 'https://gbfs.citibikenyc.com/gbfs/en',
   stationInformationURL: '/station_information.json',

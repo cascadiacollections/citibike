@@ -1,6 +1,6 @@
 {
   "name": "citibike",
-  "description": "Citi Bike NYC (GBFS) client library for Node.js",
+  "description": "Citi Bike NYC (GBFS) client library for Node.js: stations, live availability and nearest-station lookup",
   "version": "3.0.0",
   "homepage": "https://github.com/cascadiacollections/citibike",
   "repository": {
@@ -16,7 +16,10 @@
     "citibike",
     "gbfs",
     "bikeshare",
-    "transportation"
+    "transportation",
+    "stations",
+    "ebike",
+    "typescript"
   ],
   "contributors": [
     "Brad Dickason <https://twitter.com/bdickason>",
@@ -25,6 +28,15 @@
   "license": "MIT",
   "main": "./lib/citibike.js",
   "types": "./lib/citibike.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/citibike.d.ts",
+      "default": "./lib/citibike.js"
+    },
+    "./lib/citibike.js": "./lib/citibike.js",
+    "./lib/citibike": "./lib/citibike.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "lib/"
   ],
@@ -42,5 +54,6 @@
     "mocha": "^12.0.3",
     "should": "^13.2.3",
     "typescript": "^7.0.2"
-  }
+  },
+  "sideEffects": false
 }

@@ -26,25 +26,39 @@
 ## Requirements
 
   * [Node.js](https://nodejs.org/) 22 or newer (active LTS lines). No runtime dependencies.
+  * TypeScript types are included. Works from CommonJS (`require`) and ES modules (`import`).
+
+## Quick start
+
+```js
+const Citibike = require('citibike');   // or: import Citibike from 'citibike';
+const citibike = new Citibike();
+
+// Every station, with its live availability.
+const stations = await citibike.stations();
+
+// The closest stations that have an e-bike right now.
+const near = await citibike.nearest(
+  { latitude: 40.7527, longitude: -73.9772 },
+  { available: 'ebikes', limit: 3 }
+);
+console.log(near.map((s) => `${s.name}: ${s.ebikesAvailable} e-bikes, ${Math.round(s.distance)} m`));
+
+// One station, by GBFS id, legacy numeric id or the short name on the dock.
+const station = await citibike.station(72);
+```
+
+  Upgrading from 2.x? Your callback code keeps working: see
+  [2.x compatibility](#2x-compatibility).
 
 ## Data source
 
   Citi Bike retired its original `appservices.citibikenyc.com` REST API, which
   versions 2.x of this library used. Since 3.0.0 the library reads Citi Bike's
-  public [GBFS](https://gbfs.org/) feeds (`https://gbfs.citibikenyc.com/gbfs/gbfs.json`),
-  specifically `station_information` and `station_status`, and maps them onto
-  the same `{ ok, meta, results, ... }` envelope used before. The feeds are
-  run by Lyft: `gbfs.json` lists the same data under `https://gbfs.lyft.com/gbfs/1.1/bkn/`,
-  which you can pass as `restBase` (with `/en` appended) if you prefer that host.
-
-  | Method          | 3.x behavior                                                  |
-  |-----------------|---------------------------------------------------------------|
-  | `getStations()` | `station_information` + `station_status`, joined by station id |
-  | `getBranches()` | **Discontinued.** Always calls back with `ok: false`, no request is made |
-  | `getHelmets()`  | **Discontinued.** Always calls back with `ok: false`, no request is made |
-  | `get()`         | Generic GET + JSON parse for any URL (or path under `restBase`) |
-
-  See [CHANGELOG.md](./CHANGELOG.md) for the full list of breaking changes.
+  public [GBFS](https://gbfs.org/) feeds (`https://gbfs.citibikenyc.com/gbfs/gbfs.json`).
+  The feeds are run by Lyft: `gbfs.json` lists the same data under
+  `https://gbfs.lyft.com/gbfs/1.1/bkn/`, which you can pass as `restBase`
+  (with `/en` appended) if you prefer that host.
 
 ## Examples
 
@@ -52,23 +66,115 @@
 
 ## API Documentation
 
-  Every callback receives a single object. When something goes wrong (network
-  error, timeout, non-2xx status, invalid JSON, or a discontinued method) the
-  object is `{ ok: false, meta: [], results: [], error: "<message>" }`, so always
-  check `data.ok` first.
+  The full reference, generated from the source, is at
+  <https://cascadiacollections.github.io/citibike/api/>.
 
   * **Client - new Citibike( options )**
 ```js
-var Citibike = require('citibike');
-var citibike = new Citibike({
+const citibike = new Citibike({
     // all optional; these are the defaults
     restBase: 'https://gbfs.citibikenyc.com/gbfs/en',
     stationInformationURL: '/station_information.json',
     stationStatusURL: '/station_status.json',
-    timeout: 10000,               // ms
-    headers: { 'User-Agent': 'my-app/1.0' }   // merged with the defaults
+    timeout: 10000,               // ms for one request; 0 turns it off
+    cache: true,                  // keep each feed for as long as its own `ttl` says
+    headers: { 'User-Agent': 'my-app/1.0' },  // merged with the defaults
+    fetch: globalThis.fetch       // swap in your own fetch (proxy, retries, tests)
 });
 ```
+
+### Promise methods
+
+  Each method returns a promise. Each takes an optional last argument
+  `{ signal, fresh }`: `signal` is an `AbortSignal`, and `fresh: true` skips the cache.
+
+  | Method | Resolves with |
+  |--------|---------------|
+  | `stations()` | Every station: `station_information` and `station_status` joined by id |
+  | `station(id)` | One station, or `null`. `id` is a GBFS id, a legacy numeric id or a short name |
+  | `nearest(point, { limit, radius, available })` | The closest stations, nearest first, each with `distance` in meters |
+  | `feed(name)` | Any GBFS feed exactly as served, for example `system_alerts` or `system_regions` |
+  | `clearCache()` | Not a promise. Forgets cached feeds and returns the client |
+
+  * **A station**
+```json
+{
+    "id": "66db237e-0aca-11e7-82f6-3863bb44ef7c",
+    "legacyId": 72,
+    "name": "W 52 St & 11 Ave",
+    "shortName": "6926.01",
+    "latitude": 40.76727216,
+    "longitude": -73.99392888,
+    "capacity": 39,
+    "regionId": "71",
+    "bikesAvailable": 12,
+    "ebikesAvailable": 3,
+    "classicBikesAvailable": 9,
+    "docksAvailable": 22,
+    "bikesDisabled": 1,
+    "docksDisabled": 4,
+    "isInstalled": true,
+    "isRenting": true,
+    "isReturning": true,
+    "lastReported": 1761955201
+}
+```
+  `bikesAvailable` includes e-bikes. `lastReported` is a Unix timestamp in seconds.
+
+  * **Caching**
+
+  Citi Bike's feeds say how long they stay current (`ttl`, 60 seconds at the
+  time of writing). The client keeps each feed in memory for that long, and
+  callers that ask for the same feed at the same time share one request. So
+  `stations()`, `station()` and `nearest()` in a row cost two requests, not six.
+  Pass `{ fresh: true }` to a call, or `cache: false` to the client, to opt out.
+
+  * **Errors**
+
+  Promise methods reject with a `CitibikeError` (exported as `Citibike.CitibikeError`).
+  Check `error.code`:
+
+  | `code` | Meaning |
+  |--------|---------|
+  | `ETIMEDOUT` | The request took longer than `timeout` |
+  | `EABORTED` | The `signal` you passed was aborted |
+  | `ENETWORK` | The connection failed, or closed before the response finished |
+  | `EHTTP` | Non-2xx response; the status is in `error.status` |
+  | `EPARSE` | The response was not valid JSON |
+  | `EPAYLOAD` | Valid JSON, but not shaped like the feed that was asked for |
+
+```js
+try {
+    await citibike.stations({ signal: AbortSignal.timeout(3000) });
+} catch (error) {
+    if (error.code === 'EHTTP') console.error('Citi Bike answered', error.status);
+    else throw error;
+}
+```
+  Invalid arguments (a point without coordinates, a negative radius) reject with a `TypeError`.
+
+  * **Distance - Citibike.distance( a, b )**
+
+  A static helper: straight-line meters between two `{ latitude, longitude }` points.
+
+## 2.x compatibility
+
+  The callback methods from 2.x are still here, with the same signatures and
+  the same result shapes, on top of the GBFS feeds. Code written for 2.x keeps
+  working after `npm install citibike@3` as long as it runs on Node.js 22 or newer.
+
+  | Method          | 3.x behavior                                                  |
+  |-----------------|---------------------------------------------------------------|
+  | `getStations()` | Same `{ ok, meta, results, ... }` envelope as 2.x, built from GBFS |
+  | `get()`         | Generic GET + JSON parse for any URL (or path under `restBase`) |
+  | `getBranches()` | **Discontinued.** Always calls back with `ok: false`, no request is made |
+  | `getHelmets()`  | **Discontinued.** Always calls back with `ok: false`, no request is made |
+
+  Every callback receives a single object. When something goes wrong (network
+  error, timeout, non-2xx status, invalid JSON, or a discontinued method) the
+  object is `{ ok: false, meta: [], results: [], error: "<message>", code: "<code>" }`,
+  so always check `data.ok` first. In 2.x a failed request logged to the
+  console and never called back.
 
   * **Stations - .getStations( params, callback )**
 ```js
@@ -78,7 +184,7 @@ citibike.getStations(null, function(data) {
 });
 ```
   Pass `{ updateOnly: true }` to fetch only `station_status` (live availability,
-  no names or coordinates), like the old API's `updateOnly` flag.
+  no names, coordinates or `nearbyStations`), like the old API's `updateOnly` flag.
 
   * **Sample JSON Response**
 ```json
@@ -87,7 +193,8 @@ citibike.getStations(null, function(data) {
     "meta": [],
     "results": [
         {
-            "id": "66db237e-0aca-11e7-82f6-3863bb44ef7c",
+            "id": 72,
+            "stationId": "66db237e-0aca-11e7-82f6-3863bb44ef7c",
             "status": "Active",
             "availableBikes": 12,
             "availableEbikes": 3,
@@ -98,7 +205,11 @@ citibike.getStations(null, function(data) {
             "latitude": 40.76727216,
             "longitude": -73.99392888,
             "capacity": 39,
-            "stationAddress": ""
+            "stationAddress": "",
+            "nearbyStations": [
+                { "id": 480, "distance": 0.17779664783117674 },
+                { "id": 513, "distance": 0.28500434554753534 }
+            ]
         }
     ],
     "activeStations": 1,
@@ -106,10 +217,22 @@ citibike.getStations(null, function(data) {
     "lastUpdate": 1761955230
 }
 ```
-  `status` is `"Active"` when GBFS reports the station as installed and renting,
-  otherwise `"Not In Service"`. `lastUpdate` is the `station_status` feed's
-  `last_updated` timestamp. Stations present in `station_status` but not (yet)
-  in `station_information` are left out of the full response.
+  What matches 2.x, and what differs:
+
+  * `id` is the same number 2.x reported (station 72 is still W 52 St & 11 Ave).
+    It comes from the feed's `legacy_id`. A station without one gets its GBFS
+    `station_id` string as `id` instead. Every station in the live feed had a
+    legacy id as of November 2026.
+  * `nearbyStations` lists the five closest stations with `distance` in miles,
+    as 2.x did. The old API computed it; now the library does, from the
+    coordinates, so distances can differ from 2.x in the fifth decimal place.
+  * `status` is `"Active"` when GBFS reports the station as installed and renting,
+    otherwise `"Not In Service"`.
+  * `stationAddress` is always `""`: GBFS has no address.
+  * New fields: `stationId`, `availableEbikes`, `shortName`, `capacity`, `lastReported`.
+  * `lastUpdate` is the `station_status` feed's `last_updated` timestamp.
+  * Stations present in `station_status` but not (yet) in `station_information`
+    are left out of the full response.
 
   * **Branches - .getBranches( params, callback )** and **Helmets - .getHelmets( params, callback )**
 
@@ -117,14 +240,23 @@ citibike.getStations(null, function(data) {
   has no equivalent. Both methods are kept so existing code does not crash, but
   they make no request and always call back (asynchronously) with:
 ```json
-{ "ok": false, "meta": [], "results": [], "error": "getHelmets() is not available: ..." }
+{ "ok": false, "meta": [], "results": [], "error": "getHelmets() is not available: ...", "code": "EDISCONTINUED" }
 ```
+
+  * **Options that changed**
+
+  `restBase` now defaults to the GBFS host, and `helmetsURL`/`branchesURL` are
+  replaced by `stationInformationURL`/`stationStatusURL`. In 2.x the defaults
+  always won, so options you passed were ignored; in 3.x your options apply.
+
+  See [CHANGELOG.md](./CHANGELOG.md) for the full list of breaking changes.
 
 ## Testing
 
   You can test citibike (tests use local GBFS fixtures and never hit the network):
 
       $ npm test
+      $ npm run test:types    # compiles test/types against the bundled declarations
 
 ## Contributors
 
