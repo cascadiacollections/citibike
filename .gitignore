@@ -126,3 +126,6 @@ site/api/
 
 # Written by examples/history.js
 citibike-history.db*
+
+# Written by `npm run gbfs:validate` (the baseline under scripts/ is committed)
+/gbfs-report.json

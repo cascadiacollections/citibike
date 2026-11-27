@@ -272,6 +272,16 @@ citibike.getStations(null, function(data) {
   The tests use Node's built-in runner (`node:test` and `node:assert`), so there
   is nothing to install beyond the dev dependencies.
 
+  `npm test` checks `test/fixtures/canonical/1.1/` against the GBFS 1.1 schemas
+  from `gbfs-validator`, and expects zero errors. The client targets 1.1:
+  `restBase` defaults to `https://gbfs.citibikenyc.com/gbfs/en`, and the 2.3
+  station status feed drops `legacy_id`, which this library still uses. The
+  fixtures the other tests load (`test/fixtures/station_information.json` and
+  `station_status.json`) stay loose on purpose. They are labeled 2.3 and mix
+  boolean and 0/1 flags, so the client is exercised on feeds that are not
+  schema-clean. `gbfs-validator` is a dev dependency. The published package
+  still has no runtime dependencies, and `npm test` does not call the live feed.
+
   The source is TypeScript, in `src/citibike.ts`. `npm run build` compiles it with
   `tsc` into `lib/` (`citibike.js` and `citibike.d.ts`), which is what the package
   ships and what the tests and examples load. `lib/` is not committed. `npm test`,
@@ -292,6 +302,17 @@ citibike.getStations(null, function(data) {
       $ npm run check:pkg     # publint and arethetypeswrong on the packed tarball
       $ npm run docs          # generate the API reference into site/
       $ npm run docs:check    # check the site's links
+      $ npm run gbfs:validate # one live check of the GBFS 1.1 discovery file
+      $ npm run gbfs:baseline # rewrite scripts/gbfs-baseline.json from that check
+
+  `npm run gbfs:validate` fetches `https://gbfs.citibikenyc.com/gbfs/gbfs.json`
+  once and compares error shapes (file, schema path, keyword) with
+  `scripts/gbfs-baseline.json`. It is not part of `npm test`. A weekly GitHub
+  Actions workflow runs the same check and opens one issue when a new shape
+  appears. That workflow is advisory: it is not a required check, and pull
+  requests do not run it. `npm run gbfs:validate -- --version 2.3` checks
+  `https://gbfs.citibikenyc.com/gbfs/2.3/gbfs.json` once and does not change
+  the baseline.
 
   The map on the docs site stays on the daily snapshot until `STATUS_WORKER_URL`
   in `site/assets/config.js` is set. That constant is the only place the page

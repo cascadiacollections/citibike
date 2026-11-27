@@ -1,0 +1,40 @@
+{
+  "description": "Error shapes the live Citi Bike GBFS 1.1 feed already produces. A shape is the file, the JSON Schema path and the keyword. The same error on many stations or languages is one shape. Rewrite this file with npm run gbfs:baseline after a new shape is accepted.",
+  "url": "https://gbfs.citibikenyc.com/gbfs/gbfs.json",
+  "gbfsVersion": "1.1",
+  "docked": true,
+  "validatorVersion": "1.0.18",
+  "generatedAt": "2026-11-27T00:24:26.325Z",
+  "shapes": [
+    {
+      "file": "gbfs.json",
+      "schemaPath": "#/properties/data/patternProperties/%5E%5Ba-z%5D%7B2%2C3%7D(-%5BA-Z%5D%7B2%7D)%3F%24/properties/feeds/items/properties/name/enum",
+      "keyword": "enum",
+      "note": "gbfs.json lists ebikes_at_stations, which is not a GBFS 1.1 feed name."
+    },
+    {
+      "file": "gbfs_versions.json",
+      "schemaPath": "#/properties/data/properties/versions/items/properties/version/enum",
+      "keyword": "enum",
+      "note": "gbfs_versions.json publishes version strings such as \"v1.1\" instead of \"1.1\"."
+    },
+    {
+      "file": "station_status.json",
+      "schemaPath": "#/properties/data/properties/stations/items/properties/last_reported/minimum",
+      "keyword": "minimum",
+      "note": "Some station_status.json stations report last_reported earlier than the schema minimum of 1450155600."
+    },
+    {
+      "file": "system_pricing_plans.json",
+      "schemaPath": "#/properties/data/properties/plans/items/properties/is_taxable/type",
+      "keyword": "type",
+      "note": "system_pricing_plans.json is_taxable is not a number (0 or 1)."
+    },
+    {
+      "file": "system_pricing_plans.json",
+      "schemaPath": "#/properties/data/properties/plans/items/properties/price/type",
+      "keyword": "type",
+      "note": "system_pricing_plans.json price is not a number."
+    }
+  ]
+}

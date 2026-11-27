@@ -1,0 +1,122 @@
+name: GBFS feed validation
+
+# Advisory check of Citi Bike's live GBFS feed. Not a required status check,
+# and pull requests do not run it: `npm test` already proves the local
+# fixtures, and a pull request must not fetch the feed.
+#
+# One run calls gbfs-validator once. There is no retry step and no matrix.
+# The weekly cron is offset from Scorecard (Monday 06:17 UTC) and from the
+# daily station snapshot (12:17 UTC).
+#
+# The default target is the GBFS 1.1 discovery file, which is the version
+# this client reads:
+#   https://gbfs.citibikenyc.com/gbfs/gbfs.json
+# A manual run can pass version 2.3 to check this file once instead:
+#   https://gbfs.citibikenyc.com/gbfs/2.3/gbfs.json
+# A 2.3 run uploads a report and does not open or close the tracking issue.
+#
+# Error shapes (file, schema path, keyword) are compared with
+# scripts/gbfs-baseline.json. A new shape opens or updates one issue titled
+# "GBFS feed validation: new upstream errors". The issue is closed when
+# those shapes are gone. Known shapes do not fail the job.
+
+on:
+  schedule:
+    - cron: "23 16 * * 3"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "GBFS version. Empty or 1.1 checks the 1.1 discovery file. 2.3 checks https://gbfs.citibikenyc.com/gbfs/2.3/gbfs.json once instead."
+        required: false
+        type: string
+        default: "1.1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gbfs-validate
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate the live feed once
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      # Install scripts stay off because this job can open issues.
+      # gbfs-validator's published package already contains the schemas.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Validate the feed once
+        env:
+          GBFS_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || '1.1' }}
+        run: node scripts/gbfs-validate.js --report gbfs-report.json
+
+      - name: Open or close the advisory issue
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          compared=$(jq -r '.compared' gbfs-report.json)
+          if [ "$compared" != "true" ]; then
+            echo "Not the GBFS 1.1 baseline feed; leaving issues alone."
+            exit 0
+          fi
+
+          title=$(jq -r '.issueTitle' gbfs-report.json)
+          number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
+            --json number,title \
+            --jq "map(select(.title == \"${title}\")) | .[0].number // empty")
+          new_count=$(jq '.newShapes | length' gbfs-report.json)
+
+          if [ "$new_count" -eq 0 ]; then
+            if [ -z "$number" ]; then
+              echo "No new shapes, and no open issue."
+              exit 0
+            fi
+            gh issue close "$number" --repo "$GITHUB_REPOSITORY" --reason completed \
+              --comment "The live feed no longer produces error shapes outside \`scripts/gbfs-baseline.json\`. Closing this advisory issue."
+            echo "Closed #$number"
+            exit 0
+          fi
+
+          jq -r '.issue.body' gbfs-report.json > "$RUNNER_TEMP/gbfs-issue.md"
+          marker=$(jq -r '.issue.marker' gbfs-report.json)
+          if [ -n "$number" ]; then
+            existing=$(gh issue view "$number" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
+            if printf '%s\n' "$existing" | grep -F -q "$marker"; then
+              echo "Issue #$number already lists these shapes."
+              exit 0
+            fi
+            gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/gbfs-issue.md"
+            echo "Updated #$number"
+            exit 0
+          fi
+
+          url=$(gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$RUNNER_TEMP/gbfs-issue.md")
+          echo "Opened $url"
+
+      - name: Upload the validation report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gbfs-validation-report
+          path: gbfs-report.json
+          if-no-files-found: ignore
+          retention-days: 14
