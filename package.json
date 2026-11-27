@@ -55,11 +55,14 @@
     "check:pkg": "publint --strict && attw --pack .",
     "docs": "node scripts/build-docs.js",
     "docs:check": "node scripts/check-site.js",
-    "snapshot": "node scripts/snapshot-stations.js"
+    "snapshot": "node scripts/snapshot-stations.js",
+    "gbfs:validate": "node scripts/gbfs-validate.js",
+    "gbfs:baseline": "node scripts/gbfs-validate.js --write-baseline"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@types/node": "^26.6.6",
+    "gbfs-validator": "^1.0.18",
     "publint": "^0.3.25",
     "typescript": "^7.0.2"
   },

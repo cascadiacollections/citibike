@@ -1,0 +1,23 @@
+{
+  "last_updated": 1761955200,
+  "ttl": 60,
+  "version": "1.1",
+  "data": {
+    "en": {
+      "feeds": [
+        {
+          "name": "system_information",
+          "url": "https://fixtures.invalid/system_information.json"
+        },
+        {
+          "name": "station_information",
+          "url": "https://fixtures.invalid/station_information.json"
+        },
+        {
+          "name": "station_status",
+          "url": "https://fixtures.invalid/station_status.json"
+        }
+      ]
+    }
+  }
+}
