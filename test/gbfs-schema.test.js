@@ -278,7 +278,7 @@ describe('scheduled workflow', () => {
       'uses: actions/setup-node@',
       'uses: actions/upload-artifact@'
     ]);
-    assert.match(workflow, /gbfs\.citibikenyc\.com\/gbfs\/gbfs\.json/);
-    assert.match(workflow, /gbfs\.citibikenyc\.com\/gbfs\/2\.3\/gbfs\.json/);
+    assert.equal(workflow.includes('https://gbfs.citibikenyc.com/gbfs/gbfs.json'), true);
+    assert.equal(workflow.includes('https://gbfs.citibikenyc.com/gbfs/2.3/gbfs.json'), true);
   });
 });
